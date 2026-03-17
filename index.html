@@ -1,104 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA LUF193</title>
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5833/5833852.png">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5833/5833852.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1e2547">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        :root { --p:#4f46e5; --bg:#f8fafc; --txt:#1e293b; }
-        body { font-family: sans-serif; margin:0; background:var(--bg); color:var(--txt); display:flex; min-height:100vh; }
-        
-        /* Menu Lateral */
-        .sidebar { width:240px; background:#0f172a; color:white; padding:20px; position:fixed; height:100vh; }
-        .nav-btn { width:100%; padding:12px; margin-bottom:5px; background:none; border:none; color:#94a3b8; text-align:left; cursor:pointer; border-radius:8px; font-weight:600; }
-        .nav-btn:hover, .nav-btn.active { background:#1e293b; color:white; }
-        .nav-btn.active { background:var(--p); }
+<title>LUF193 Tesorería</title>
 
-        /* Area Principal */
-        .main { margin-left:240px; padding:30px; flex:1; }
-        .card { background:white; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
-        .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
-        
-        /* Tablas */
-        table { width:100%; border-collapse:collapse; margin-top:10px; }
-        th, td { padding:12px; text-align:left; border-bottom:1px solid #e2e8f0; }
-        th { background:#f1f5f9; font-size:12px; text-transform:uppercase; color:#64748b; }
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5833/5833852.png">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5833/5833852.png">
 
-        /* Modales */
-        .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:100; }
-        .modal { background:white; padding:25px; border-radius:15px; width:100%; max-width:400px; }
-        input, select { width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:8px; }
-        .btn { padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; }
-        .btn-p { background:var(--p); color:white; width:100%; }
-        
-        #login { position:fixed; inset:0; background:#0f172a; z-index:1000; display:flex; align-items:center; justify-content:center; }
-    </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* TU DISEÑO ORIGINAL COMPLETO */
+:root{
+  --bg:#eef0fb;--surface:#ffffff;--surface2:#f4f5fd;--border:#dde0f0;
+  --accent:#6b8ef5;--accent2:#a07cf6;--green:#2eb870;--yellow:#e8a820;
+  --orange:#e87840;--red:#e85560;--teal:#22b8a4;--pink:#e870a0;
+  --text:#1e2547;--text2:#5a6285;--text3:#9da4c2;
+  --radius:14px;--radius-sm:8px;
+  --shadow:0 2px 12px #6b8ef518;--shadow-md:0 4px 24px #6b8ef524;
+}
+*{box-sizing:border-box;margin:0;padding:0; -webkit-tap-highlight-color: transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 70% 30%,#c8d8ff 0%,transparent 50%),
+  radial-gradient(ellipse at 20% 80%,#dcc8ff 0%,transparent 50%),
+  radial-gradient(ellipse at 50% 50%,#e8f0ff 0%,#eef0fb 100%)}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:24px;
+  padding:48px 40px;width:100%;max-width:400px;text-align:center;box-shadow:var(--shadow-md)}
+.login-logo{font-size:38px;margin-bottom:8px}
+.login-brand{font-size:22px;font-weight:900;letter-spacing:.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-sub{color:var(--text2);font-size:13px;margin-bottom:28px}
+
+/* APP ESTRUCTURA */
+#app{display:none}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s;box-shadow:var(--shadow)}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-brand{font-size:16px;font-weight:900;letter-spacing:.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:10px 12px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:linear-gradient(135deg,#e8eeff,#f0e8ff);color:var(--accent);font-weight:600}
+.main{margin-left:250px;min-height:100vh}
+.topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:62px;display:flex;align-items:center;gap:16px;z-index:50;box-shadow:0 1px 8px #6b8ef510}
+.menu-btn{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px}
+.content{padding:24px}
+
+/* COMPONENTES */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:20px}
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:#fff}
+table{width:100%;border-collapse:collapse}
+th{background:var(--surface2);padding:12px;text-align:left;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+td{padding:12px;border-top:1px solid var(--border);font-size:13px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--radius-sm);border:none;font-weight:600;cursor:pointer;transition:0.2s;justify-content:center}
+.btn-primary{background:var(--accent);color:#fff}
+.modal-overlay{position:fixed;inset:0;background:rgba(30,37,71,0.6);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:450px;box-shadow:var(--shadow-md)}
+input, select { width:100%; padding:10px; margin:8px 0; border:1px solid var(--border); border-radius:8px; background:var(--surface2); }
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}.menu-btn{display:block}
+}
+</style>
 </head>
 <body>
 
-<div id="login">
-    <div class="modal" style="text-align:center">
-        <h2>Acceso LUF193</h2>
-        <input type="password" id="pass" placeholder="Contraseña">
-        <button class="btn btn-p" onclick="entrar()">ENTRAR</button>
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🏛️</div>
+    <div class="login-brand">LUF193 TESORERÍA</div>
+    <div style="margin-top:20px">
+      <input type="password" id="login-pass" placeholder="Contraseña de acceso" style="text-align:center">
+      <button class="btn btn-primary" style="width:100%; margin-top:10px" onclick="doLogin()">INGRESAR</button>
     </div>
+  </div>
 </div>
 
-<div class="sidebar">
-    <h3>🏛️ LUF193</h3><br>
-    <button class="nav-btn active" onclick="ver('inicio', this)">📊 Inicio</button>
-    <button class="nav-btn" onclick="ver('socios', this)">👥 Socios</button>
-    <button class="nav-btn" onclick="ver('libro', this)">📒 Libro Contable</button>
-    <button class="nav-btn" onclick="ver('morosos', this)">⚠️ Morosos</button>
-    <hr style="opacity:0.1; margin:20px 0">
-    <button class="btn btn-p" onclick="abrir('m-ingreso')" style="background:#10b981">+ Cobrar Cuota</button>
-    <button class="btn btn-p" onclick="abrir('m-egreso')" style="background:#ef4444; margin-top:10px">- Registrar Gasto</button>
-    <button class="btn" onclick="abrir('m-socio')" style="width:100%; margin-top:10px; background:#64748b; color:white">+ Alta Socio</button>
-    <button class="btn" style="width:100%; margin-top:20px; background:#64748b; color:white" onclick="descargar()">📥 Excel</button>
-</div>
-
-<div class="main">
-    <h1 id="titulo">Inicio</h1>
-    <div id="contenido"></div>
-</div>
-
-<div class="modal-bg" id="m-socio">
-    <div class="modal">
-        <h3>Nuevo Socio</h3>
-        <input id="nom" placeholder="Nombre completo">
-        <input id="tel" placeholder="Teléfono">
-        <input type="number" id="sal" placeholder="Saldo inicial (ej: -500 si debe)">
-        <button class="btn btn-p" onclick="guardarSocio()">Guardar</button>
-        <button class="btn" onclick="cerrar('m-socio')">Cerrar</button>
+<div id="app">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-brand">LUF193 TESORERÍA</div>
     </div>
+    <div class="sidebar-nav">
+      <div class="nav-group-label">Principal</div>
+      <button class="nav-item active" id="btn-dashboard" onclick="navigate('dashboard')">📊 Dashboard</button>
+      <button class="nav-item" id="btn-socios" onclick="navigate('socios')">👥 Socios</button>
+      <button class="nav-item" id="btn-libro" onclick="navigate('libro')">📒 Libro Contable</button>
+      <button class="nav-item" id="btn-morosos" onclick="navigate('morosos')">⚠️ Morosos</button>
+      <div class="nav-group-label">Acciones</div>
+      <button class="nav-item" onclick="abrirModal('modal-cobro')">💰 Registrar Cobro</button>
+      <button class="nav-item" onclick="abrirModal('modal-gasto')">🧾 Registrar Gasto</button>
+      <button class="nav-item" onclick="abrirModal('modal-socio')">👤 Nuevo Socio</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div class="page-title" id="page-title">Dashboard</div>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="descargarExcel()">📥 Excel</button>
+    </div>
+    <div class="content" id="page-content"></div>
+  </div>
 </div>
 
-<div class="modal-bg" id="m-ingreso">
-    <div class="modal">
-        <h3>Registrar Pago</h3>
-        <select id="sel-socio"></select>
-        <input type="number" id="monto-i" placeholder="Monto que paga ($)">
-        <button class="btn btn-p" onclick="guardarPago()">Confirmar</button>
-        <button class="btn" onclick="cerrar('m-ingreso')">Cerrar</button>
-    </div>
+<div class="modal-overlay" id="modal-socio">
+  <div class="modal">
+    <h3>👤 Nuevo Socio</h3>
+    <input id="s-nom" placeholder="Nombre completo">
+    <input id="s-tel" placeholder="Teléfono">
+    <input type="number" id="s-sal" placeholder="Saldo inicial (ej: -500)">
+    <button class="btn btn-primary" style="width:100%" onclick="guardarSocio()">Guardar</button>
+    <button class="btn" style="width:100%; margin-top:8px" onclick="cerrarModal('modal-socio')">Cancelar</button>
+  </div>
 </div>
 
-<div class="modal-bg" id="m-egreso">
-    <div class="modal">
-        <h3>Registrar Gasto</h3>
-        <input id="det-e" placeholder="Concepto (ej: UTE)">
-        <input type="number" id="monto-e" placeholder="Monto pagado ($)">
-        <button class="btn btn-p" onclick="guardarGasto()">Registrar</button>
-        <button class="btn" onclick="cerrar('m-egreso')">Cerrar</button>
-    </div>
+<div class="modal-overlay" id="modal-cobro">
+  <div class="modal">
+    <h3>💰 Registrar Pago</h3>
+    <select id="sel-socio-pago"></select>
+    <input type="number" id="monto-pago" placeholder="Monto $">
+    <button class="btn btn-primary" style="width:100%; background:var(--green)" onclick="confirmarPago()">Confirmar Cobro</button>
+    <button class="btn" style="width:100%; margin-top:8px" onclick="cerrarModal('modal-cobro')">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-gasto">
+  <div class="modal">
+    <h3>🧾 Registrar Gasto</h3>
+    <input id="g-det" placeholder="Concepto (ej: UTE, Sueldo)">
+    <input type="number" id="g-mon" placeholder="Monto $">
+    <button class="btn btn-primary" style="width:100%; background:var(--red)" onclick="confirmarGasto()">Registrar Salida</button>
+    <button class="btn" style="width:100%; margin-top:8px" onclick="cerrarModal('modal-gasto')">Cancelar</button>
+  </div>
 </div>
 
 <script type="module">
@@ -117,81 +162,90 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // VINCULACIÓN AL OBJETO WINDOW PARA QUE LOS BOTONES NO FALLEN
-    window.entrar = () => {
-        if(document.getElementById('pass').value === "LUF2026") {
-            document.getElementById('login').style.display = 'none';
-            window.ver('inicio');
-        } else { alert("Clave incorrecta"); }
+    // FUNCIONES GLOBALES PARA ANDROID
+    window.doLogin = () => {
+        if(document.getElementById('login-pass').value === "LUF2026") {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            window.navigate('dashboard');
+        } else { alert("Clave Incorrecta"); }
     };
 
-    window.ver = async (v, btn) => {
-        if(btn) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-        document.getElementById('titulo').innerText = v.toUpperCase();
-        const cont = document.getElementById('contenido');
+    window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
 
-        if(v === 'inicio'){
+    window.navigate = async (page) => {
+        document.getElementById('page-title').innerText = page.toUpperCase();
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        const cont = document.getElementById('page-content');
+        cont.innerHTML = "Cargando...";
+
+        if(page === 'dashboard') {
             const m = await getDocs(collection(db, "movimientos"));
             let total = 0; m.forEach(d => total += d.data().monto);
-            cont.innerHTML = `<div class="card"><h2>Caja del Club: $ ${total}</h2></div>`;
-        } else if(v === 'socios'){
-            cont.innerHTML = `<button class="btn btn-p" style="width:200px" onclick="abrir('m-socio')">+ Nuevo Socio</button>
-            <div class="card"><table><thead><tr><th>Nombre</th><th>Tel</th><th>Saldo</th></tr></thead><tbody id="t"></tbody></table></div>`;
+            cont.innerHTML = `<div class="card" style="text-align:center">
+                <div style="font-size:11px; color:var(--text3); font-weight:bold">SALDO TOTAL EN CAJA</div>
+                <div style="font-size:42px; font-weight:900; color:var(--accent); font-family:'DM Mono'">$ ${total}</div>
+            </div>`;
+        } else if(page === 'socios') {
+            cont.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Socio</th><th>Saldo</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
             const s = await getDocs(collection(db, "socios"));
             s.forEach(d => {
-                document.getElementById('t').innerHTML += `<tr><td>${d.data().nombre}</td><td>${d.data().tel}</td><td>$ ${d.data().saldo}</td></tr>`;
+                const color = d.data().saldo < 0 ? 'var(--red)' : 'var(--green)';
+                document.getElementById('t-body').innerHTML += `<tr><td>${d.data().nombre}</td><td style="color:${color}; font-weight:bold">$ ${d.data().saldo}</td></tr>`;
             });
-        } else if(v === 'libro'){
-            cont.innerHTML = `<div class="card"><table><thead><tr><th>Fecha</th><th>Detalle</th><th>Monto</th></tr></thead><tbody id="t"></tbody></table></div>`;
+        } else if(page === 'libro') {
+            cont.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Detalle</th><th>Monto</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
             const m = await getDocs(query(collection(db, "movimientos"), orderBy("fecha", "desc")));
             m.forEach(d => {
-                document.getElementById('t').innerHTML += `<tr><td>${d.data().fecha?.toDate().toLocaleDateString() || 'Hoy'}</td><td>${d.data().detalle}</td><td>$ ${d.data().monto}</td></tr>`;
+                const color = d.data().monto < 0 ? 'var(--red)' : 'var(--green)';
+                document.getElementById('t-body').innerHTML += `<tr><td>${d.data().detalle}</td><td style="color:${color}; font-weight:bold">$ ${d.data().monto}</td></tr>`;
             });
-        } else if(v === 'morosos'){
-            cont.innerHTML = `<div class="card"><table><thead><tr><th>Socio</th><th>Deuda</th></tr></thead><tbody id="t"></tbody></table></div>`;
+        } else if(page === 'morosos') {
+            cont.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Socio</th><th>Deuda</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
             const s = await getDocs(collection(db, "socios"));
             s.forEach(d => {
-                if(d.data().saldo < 0) document.getElementById('t').innerHTML += `<tr><td>${d.data().nombre}</td><td style="color:red">$ ${d.data().saldo}</td></tr>`;
+                if(d.data().saldo < 0) document.getElementById('t-body').innerHTML += `<tr><td>${d.data().nombre}</td><td style="color:var(--red); font-weight:bold">$ ${d.data().saldo}</td></tr>`;
             });
         }
+
+        if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
     };
 
     window.guardarSocio = async () => {
-        await addDoc(collection(db, "socios"), { nombre: document.getElementById('nom').value, tel: document.getElementById('tel').value, saldo: Number(document.getElementById('sal').value), fecha: serverTimestamp() });
+        await addDoc(collection(db, "socios"), { nombre: document.getElementById('s-nom').value, tel: document.getElementById('s-tel').value, saldo: Number(document.getElementById('s-sal').value), fecha: serverTimestamp() });
         location.reload();
     };
 
-    window.guardarPago = async () => {
-        const id = document.getElementById('sel-socio').value;
-        const mt = Number(document.getElementById('monto-i').value);
+    window.confirmarPago = async () => {
+        const id = document.getElementById('sel-socio-pago').value;
+        const mt = Number(document.getElementById('monto-pago').value);
         await updateDoc(doc(db, "socios", id), { saldo: increment(mt) });
-        await addDoc(collection(db, "movimientos"), { detalle: `Pago de cuota`, monto: mt, fecha: serverTimestamp() });
+        await addDoc(collection(db, "movimientos"), { detalle: `Cobro Cuota`, monto: mt, fecha: serverTimestamp() });
         location.reload();
     };
 
-    window.guardarGasto = async () => {
-        const mt = Number(document.getElementById('monto-e').value);
-        await addDoc(collection(db, "movimientos"), { detalle: document.getElementById('det-e').value, monto: -mt, fecha: serverTimestamp() });
+    window.confirmarGasto = async () => {
+        const mt = Number(document.getElementById('g-mon').value);
+        await addDoc(collection(db, "movimientos"), { detalle: document.getElementById('g-det').value, monto: -mt, fecha: serverTimestamp() });
         location.reload();
     };
 
-    window.abrir = async (id) => {
+    window.abrirModal = async (id) => {
         document.getElementById(id).style.display = 'flex';
-        if(id === 'm-ingreso'){
+        if(id === 'modal-cobro') {
             const s = await getDocs(collection(db, "socios"));
-            document.getElementById('sel-socio').innerHTML = s.docs.map(d => `<option value="${d.id}">${d.data().nombre}</option>`).join('');
+            document.getElementById('sel-socio-pago').innerHTML = s.docs.map(d => `<option value="${d.id}">${d.data().nombre}</option>`).join('');
         }
     };
-    window.cerrar = (id) => document.getElementById(id).style.display = 'none';
+    window.cerrarModal = (id) => document.getElementById(id).style.display = 'none';
 
-    window.descargar = async () => {
-        const wb = XLSX.utils.book_new();
+    window.descargarExcel = async () => {
         const m = await getDocs(collection(db, "movimientos"));
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(m.docs.map(d => d.data())), "Balance");
-        XLSX.writeFile(wb, "LUF193_Balance.xlsx");
+        const data = m.docs.map(d => d.data());
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Balance");
+        XLSX.writeFile(wb, "LUF193_Tesorería.xlsx");
     };
 </script>
 </body>
