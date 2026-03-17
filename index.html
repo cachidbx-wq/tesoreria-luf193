@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUF193 Tesorería</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* MANTENGO TUS ESTILOS ORIGINALES */
+:root{
+  --bg:#eef0fb;--surface:#ffffff;--surface2:#f4f5fd;--border:#dde0f0;
+  --accent:#6b8ef5;--accent2:#a07cf6;--green:#2eb870;--yellow:#e8a820;
+  --orange:#e87840;--red:#e85560;--teal:#22b8a4;--pink:#e870a0;
+  --text:#1e2547;--text2:#5a6285;--text3:#9da4c2;
+  --radius:14px;--radius-sm:8px;
+  --shadow:0 2px 12px #6b8ef518;--shadow-md:0 4px 24px #6b8ef524;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+/* ... (El resto de tu CSS original se mantiene igual) ... */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 70% 30%,#c8d8ff 0%,transparent 50%),radial-gradient(ellipse at 20% 80%,#dcc8ff 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,#e8f0ff 0%,#eef0fb 100%)}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:24px;padding:48px 40px;width:100%;max-width:400px;text-align:center;box-shadow:var(--shadow-md)}
+.login-logo{font-size:38px;margin-bottom:8px}
+.login-brand{font-size:22px;font-weight:900;letter-spacing:.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-sub{color:var(--text2);font-size:13px;margin-bottom:28px}
+.login-tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:24px;border:1px solid var(--border)}
+.login-tab{flex:1;padding:8px;border-radius:7px;border:none;background:transparent;color:var(--text2);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.login-tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px #6b8ef540}
+#app{display:none}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s;box-shadow:var(--shadow)}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-brand{font-size:16px;font-weight:900;letter-spacing:.04em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-item.active{background:linear-gradient(135deg,#e8eeff,#f0e8ff);color:var(--accent);font-weight:600}
+.main{margin-left:250px;min-height:100vh}
+.topbar{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:62px;display:flex;align-items:center;gap:16px;z-index:50}
+.content{padding:24px}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.form-group{margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+input,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 13px;outline:none}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:var(--radius-sm);border:none;font-weight:600;cursor:pointer}
+.btn-primary{background:var(--accent);color:#fff}
+.modal-overlay{position:fixed;inset:0;background:#1e254780;z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px;width:100%;max-width:540px}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🏛️</div>
+    <div class="login-brand">LUF193 TESORERÍA</div>
+    <div id="login-form-admin">
+      <div class="form-group"><label>Usuario</label><input id="login-user" value="admin"></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="login-pass" value="1234"></div>
+      <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Ingresar</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-brand">LUF193 TESORERÍA</div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</button>
+      <button class="nav-item" onclick="openModal('modal-socio')">👥 Agregar Socio</button>
+      <button class="nav-item" onclick="openModal('modal-gasto')">🧾 Registrar Gasto</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar"><div class="page-title">Panel de Control</div></div>
+    <div class="content">
+        <div class="card">
+            <h3>Bienvenido al Sistema de Tesorería</h3>
+            <p>Los datos se están sincronizando con Firebase.</p>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-socio">
+  <div class="modal">
+    <h3>Nuevo Socio</h3>
+    <div class="form-group"><label>Nombre</label><input id="s-nombre"></div>
+    <div class="form-group"><label>Teléfono</label><input id="s-telefono"></div>
+    <button class="btn btn-primary" onclick="saveSocioCloud()">Guardar en la Nube</button>
+    <button onclick="closeModal('modal-socio')">Cerrar</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJG7C-fz81HWz0OmskEz0oiMVa-8TeEp8",
+    authDomain
