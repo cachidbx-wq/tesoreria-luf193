@@ -3,47 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema de Tesorería LUF193</title>
+<title>LUF193 Tesorería Blindada</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f8fafd;--surface:#ffffff;--border:#e2e8f0;
-  --accent:#4f46e5;--accent-light:#eef2ff;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;
-  --text:#1e293b;--text-light:#64748b;--radius:12px;
+  --accent:#4f46e5;--accent-light:#eef2ff;--green:#10b981;--red:#ef4444;--text:#1e293b;--text-light:#64748b;--radius:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;font-family:'DM Sans',sans-serif}
 body{background:var(--bg);color:var(--text);display:flex;min-height:100vh}
 
-/* NAVEGACIÓN */
-.sidebar{width:260px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh}
+.sidebar{width:260px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100}
 .sidebar-header{padding:24px;font-weight:700;font-size:1.2rem;color:var(--accent);border-bottom:1px solid var(--border)}
 .nav-group{padding:20px 15px 10px;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase}
 .nav-item{margin:2px 15px;padding:10px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text-light);transition:0.2s;border:none;background:none;width:calc(100% - 30px);text-align:left}
 .nav-item:hover, .nav-item.active{background:var(--accent-light);color:var(--accent);font-weight:600}
 
-/* CONTENIDO */
 .main{margin-left:260px;flex:1;padding:30px}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:30px}
 .card{background:#fff;padding:20px;border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
 .stat-val{font-size:24px;font-weight:700;margin-top:10px}
 
-/* TABLAS */
 .table-container{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
 table{width:100%;border-collapse:collapse}
 th{background:#f1f5f9;padding:12px 15px;text-align:left;font-size:12px;color:var(--text-light)}
 td{padding:12px 15px;border-top:1px solid var(--border);font-size:14px}
 
-/* MODALES Y FORMS */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-bg.open{display:flex}
 .modal{background:#fff;padding:30px;border-radius:16px;width:100%;max-width:450px}
 .form-group{margin-bottom:15px}
 label{display:block;font-size:13px;font-weight:600;margin-bottom:5px}
-input, select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;outline:none}
+input, select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;outline:none;background:#fff}
 .btn{padding:10px 20px;border-radius:8px;border:none;font-weight:600;cursor:pointer;transition:0.2s}
 .btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{background:#4338ca}
+.btn-excel{background:var(--green);color:#fff; margin: 20px 15px; display: block;}
 
 #login-screen{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;align-items:center;justify-content:center}
 </style>
@@ -52,23 +48,23 @@ input, select{width:100%;padding:10px;border:1px solid var(--border);border-radi
 
 <div id="login-screen">
     <div class="card" style="width:350px; text-align:center">
-        <h2 style="color:var(--accent)">LUF193 Tesorería</h2><br>
-        <input type="password" id="login-pass" placeholder="Contraseña de acceso" style="margin-bottom:15px">
-        <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Ingresar al Sistema</button>
+        <h2 style="color:var(--accent)">Acceso Tesorería</h2><br>
+        <input type="password" id="login-pass" placeholder="Ingresar contraseña" style="margin-bottom:15px; text-align: center;">
+        <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Entrar</button>
     </div>
 </div>
 
 <div class="sidebar">
     <div class="sidebar-header">🏛️ LUF193</div>
     <div class="nav-group">Administración</div>
-    <button class="nav-item active" onclick="navigate('dashboard')">📊 Resumen</button>
-    <button class="nav-item" onclick="navigate('socios')">👥 Socios</button>
+    <button class="nav-item active" onclick="navigate('dashboard', this)">📊 Dashboard</button>
+    <button class="nav-item" onclick="navigate('socios', this)">👥 Socios</button>
     <div class="nav-group">Movimientos</div>
     <button class="nav-item" onclick="openModal('modal-cobro')">💰 Registrar Cobro</button>
-    <button class="nav-item" onclick="navigate('gastos')">🧾 Gastos Club</button>
+    <button class="nav-item" onclick="navigate('gastos', this)">🧾 Gastos Club</button>
     <div class="nav-group">Reportes</div>
-    <button class="nav-item" onclick="navigate('morosos')">⚠️ Morosos</button>
-    <button class="nav-item" onclick="navigate('contabilidad')">📒 Libro Diario</button>
+    <button class="nav-item" onclick="navigate('morosos', this)">⚠️ Morosos</button>
+    <button class="btn btn-excel" onclick="exportToExcel()">📥 Generar Excel</button>
 </div>
 
 <div class="main">
@@ -78,38 +74,41 @@ input, select{width:100%;padding:10px;border:1px solid var(--border);border-radi
 
 <div class="modal-bg" id="modal-socio">
     <div class="modal">
-        <h3>Nuevo Socio</h3><br>
+        <h3>👤 Nuevo Socio</h3><br>
         <div class="form-group"><label>Nombre</label><input id="s-nombre"></div>
         <div class="form-group"><label>Teléfono</label><input id="s-tel"></div>
-        <div class="form-group"><label>Saldo inicial ($)</label><input type="number" id="s-saldo" value="0"></div>
-        <button class="btn btn-primary" onclick="saveData('socios')">Guardar</button>
-        <button class="btn" onclick="closeModal('modal-socio')">Cancelar</button>
+        <div class="form-group"><label>Saldo Inicial ($)</label><input type="number" id="s-saldo" value="0"></div>
+        <button class="btn btn-primary" onclick="saveData('socios')">Guardar Socio</button>
+        <button class="btn" onclick="closeModal('modal-socio')">Cerrar</button>
     </div>
 </div>
 
 <div class="modal-bg" id="modal-cobro">
     <div class="modal">
-        <h3>Registrar Cobro de Cuota</h3><br>
+        <h3>💰 Cobro de Cuota</h3><br>
         <div class="form-group"><label>Socio</label><select id="c-socio"></select></div>
         <div class="form-group"><label>Monto Recibido ($)</label><input type="number" id="c-monto"></div>
         <button class="btn btn-primary" onclick="saveData('cobros')">Registrar Pago</button>
-        <button class="btn" onclick="closeModal('modal-cobro')">Cancelar</button>
+        <button class="btn" onclick="closeModal('modal-cobro')">Cerrar</button>
     </div>
 </div>
 
 <div class="modal-bg" id="modal-gasto">
     <div class="modal">
-        <h3>Registrar Gasto del Club</h3><br>
-        <div class="form-group"><label>Concepto</label><input id="g-concepto"></div>
+        <h3>🧾 Registro de Gasto</h3><br>
+        <div class="form-group"><label>Detalle</label><input id="g-concepto"></div>
         <div class="form-group"><label>Monto Pagado ($)</label><input type="number" id="g-monto"></div>
-        <button class="btn btn-primary" onclick="saveData('gastos')">Registrar Gasto</button>
-        <button class="btn" onclick="closeModal('modal-gasto')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveData('gastos')">Guardar Gasto</button>
+        <button class="btn" onclick="closeModal('modal-gasto')">Cerrar</button>
     </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy, where, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// --- CONFIGURACIÓN DE SEGURIDAD ---
+const CLAVE_ACCESO = "LUF2026"; // <-- CAMBIA TU CONTRASEÑA AQUÍ
 
 const firebaseConfig = {
     apiKey: "AIzaSyDJG7C-fz81HWz0OmskEz0oiMVa-8TeEp8",
@@ -123,48 +122,45 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- NAVEGACIÓN ---
-window.navigate = async (view) => {
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('page-title').innerText = view.toUpperCase();
+window.navigate = async (view, btn) => {
+    if(btn){
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    document.getElementById('page-title').innerText = view.charAt(0).toUpperCase() + view.slice(1);
     const content = document.getElementById('view-content');
 
     if(view === 'dashboard'){
-        content.innerHTML = `
-            <div class="grid">
-                <div class="card">Saldo Caja<div class="stat-val" id="total-caja">$0</div></div>
-                <div class="card">Socios Activos<div class="stat-val" id="total-socios">0</div></div>
-                <div class="card">Deuda Total<div class="stat-val" style="color:red" id="total-deuda">$0</div></div>
-            </div>`;
+        content.innerHTML = `<div class="grid">
+            <div class="card">Socios Registrados<div class="stat-val" id="total-socios">...</div></div>
+            <div class="card">Monto en Mora<div class="stat-val" style="color:var(--red)" id="total-deuda">$0</div></div>
+        </div>`;
         updateStats();
     } else if(view === 'socios'){
-        content.innerHTML = `
-            <button class="btn btn-primary" style="margin-bottom:20px" onclick="openModal('modal-socio')">+ Agregar Socio</button>
+        content.innerHTML = `<button class="btn btn-primary" style="margin-bottom:20px" onclick="openModal('modal-socio')">+ Nuevo Socio</button>
             <div class="table-container"><table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Saldo</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
         loadTable('socios');
     } else if(view === 'gastos'){
-        content.innerHTML = `
-            <button class="btn btn-primary" style="margin-bottom:20px" onclick="openModal('modal-gasto')">+ Registrar Gasto</button>
+        content.innerHTML = `<button class="btn btn-primary" style="margin-bottom:20px" onclick="openModal('modal-gasto')">+ Registrar Gasto</button>
             <div class="table-container"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
         loadTable('gastos');
     } else if(view === 'morosos'){
-        content.innerHTML = `<div class="table-container"><table><thead><tr><th>Socio</th><th>Saldo Pendiente</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
+        content.innerHTML = `<div class="table-container"><table><thead><tr><th>Socio</th><th>Deuda Acumulada</th></tr></thead><tbody id="t-body"></tbody></table></div>`;
         loadTable('morosos');
     }
 };
 
-// --- LOGICA DE DATOS ---
-async function loadTable(collectionName){
+async function loadTable(colName){
     const tbody = document.getElementById('t-body');
-    tbody.innerHTML = "Cargando...";
-    const q = query(collection(db, collectionName === 'morosos' ? 'socios' : collectionName), orderBy("fecha", "desc"));
+    if(!tbody) return;
+    const q = query(collection(db, colName === 'morosos' ? 'socios' : colName), orderBy("fecha", "desc"));
     const snap = await getDocs(q);
     tbody.innerHTML = "";
     snap.forEach(doc => {
         const d = doc.data();
-        if(collectionName === 'socios') tbody.innerHTML += `<tr><td>${d.nombre}</td><td>${d.tel}</td><td>$${d.saldo}</td></tr>`;
-        if(collectionName === 'gastos') tbody.innerHTML += `<tr><td>${d.fecha?.toDate().toLocaleDateString()}</td><td>${d.concepto}</td><td style="color:red">-$${d.monto}</td></tr>`;
-        if(collectionName === 'morosos' && d.saldo < 0) tbody.innerHTML += `<tr><td>${d.nombre}</td><td style="color:red">$${d.saldo}</td></tr>`;
+        if(colName === 'socios') tbody.innerHTML += `<tr><td>${d.nombre}</td><td>${d.tel}</td><td style="color:${d.saldo < 0 ? 'red' : 'green'}">$${d.saldo}</td></tr>`;
+        if(colName === 'gastos') tbody.innerHTML += `<tr><td>${d.fecha?.toDate().toLocaleDateString() || 'Hoy'}</td><td>${d.concepto}</td><td style="color:red">-$${d.monto}</td></tr>`;
+        if(colName === 'morosos' && d.saldo < 0) tbody.innerHTML += `<tr><td>${d.nombre}</td><td style="color:red">$${d.saldo}</td></tr>`;
     });
 }
 
@@ -184,46 +180,56 @@ window.saveData = async (type) => {
                 fecha: serverTimestamp()
             });
         } else if(type === 'cobros'){
-            const socioId = document.getElementById('c-socio').value;
-            const monto = Number(document.getElementById('c-monto').value);
-            await addDoc(collection(db, "ingresos"), { socioId, monto, fecha: serverTimestamp() });
-            // Aquí se podría actualizar el saldo del socio con un UpdateDoc
+            const sid = document.getElementById('c-socio').value;
+            const amt = Number(document.getElementById('c-monto').value);
+            await updateDoc(doc(db, "socios", sid), { saldo: increment(amt) });
+            await addDoc(collection(db, "ingresos"), { socioId: sid, monto: amt, fecha: serverTimestamp() });
         }
-        alert("Guardado correctamente");
+        alert("¡Registro Exitoso!");
         closeModal(`modal-${type.slice(0,-1)}`);
-        navigate(type === 'ingresos' ? 'dashboard' : type);
-    } catch(e) { alert("Error al guardar datos"); }
+        navigate(type === 'cobros' ? 'dashboard' : type);
+    } catch(e) { alert("Error de conexión"); }
 };
 
-// --- LOGIN Y START ---
+window.exportToExcel = async () => {
+    const wb = XLSX.utils.book_new();
+    const snapSocios = await getDocs(collection(db, "socios"));
+    const dataSocios = snapSocios.docs.map(d => ({ Nombre: d.data().nombre, Teléfono: d.data().tel, Saldo_USD: d.data().saldo }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataSocios), "Socios_Saldos");
+    
+    const snapGastos = await getDocs(collection(db, "gastos"));
+    const dataGastos = snapGastos.docs.map(d => ({ Fecha: d.data().fecha?.toDate().toLocaleDateString(), Detalle: d.data().concepto, Egreso: d.data().monto }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataGastos), "Historial_Gastos");
+
+    XLSX.writeFile(wb, `Tesorería_LUF193_${new Date().getMonth()+1}_${new Date().getFullYear()}.xlsx`);
+};
+
 window.doLogin = () => {
-    if(document.getElementById('login-pass').value === "1234"){
+    const input = document.getElementById('login-pass').value;
+    if(input === CLAVE_ACCESO){
         document.getElementById('login-screen').style.display = 'none';
         navigate('dashboard');
-    } else { alert("Clave incorrecta"); }
+    } else { alert("Contraseña de seguridad incorrecta"); }
 };
 
-window.openModal = (id) => {
-    document.getElementById(id).style.display = 'flex';
-    if(id === 'modal-cobro') loadSociosSelect();
+window.openModal = async (id) => {
+    document.getElementById(id).classList.add('open');
+    if(id === 'modal-cobro'){
+        const sel = document.getElementById('c-socio');
+        const s = await getDocs(collection(db, "socios"));
+        sel.innerHTML = "";
+        s.forEach(d => sel.innerHTML += `<option value="${d.id}">${d.data().nombre}</option>`);
+    }
 };
-window.closeModal = (id) => document.getElementById(id).style.display = 'none';
 
-async function loadSociosSelect(){
-    const s = await getDocs(collection(db, "socios"));
-    const sel = document.getElementById('c-socio');
-    sel.innerHTML = "";
-    s.forEach(doc => sel.innerHTML += `<option value="${doc.id}">${doc.data().nombre}</option>`);
-}
+window.closeModal = (id) => document.getElementById(id).classList.remove('open');
 
 async function updateStats(){
     const s = await getDocs(collection(db, "socios"));
     document.getElementById('total-socios').innerText = s.size;
-    let deuda = 0;
-    s.forEach(doc => { if(doc.data().saldo < 0) deuda += doc.data().saldo; });
-    document.getElementById('total-deuda').innerText = `$${Math.abs(deuda)}`;
+    let d = 0; s.forEach(doc => { if(doc.data().saldo < 0) d += doc.data().saldo; });
+    document.getElementById('total-deuda').innerText = `$${Math.abs(d)}`;
 }
-
 </script>
 </body>
 </html>
