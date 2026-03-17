@@ -3,85 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LUF193 - Gestión</title>
+    <title>SISTEMA LUF193</title>
     
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0f172a">
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/5833/5833852.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5833/5833852.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <style>
-        :root { --p:#4f46e5; --bg:#f1f5f9; --txt:#1e293b; --side:#0f172a; }
-        body { font-family: 'Segoe UI', sans-serif; margin:0; background:var(--bg); color:var(--txt); display:flex; min-height:100vh; }
+        :root { --p:#4f46e5; --bg:#f8fafc; --txt:#1e293b; }
+        body { font-family: sans-serif; margin:0; background:var(--bg); color:var(--txt); display:flex; min-height:100vh; }
         
-        /* DISEÑO TIPO APP */
-        .sidebar { width:240px; background:var(--side); color:white; padding:20px; position:fixed; height:100vh; z-index:10; }
-        .sidebar h3 { color: var(--p); letter-spacing: 1px; margin-bottom: 30px; }
-        
-        .nav-btn { width:100%; padding:14px; margin-bottom:8px; background:none; border:none; color:#94a3b8; text-align:left; cursor:pointer; border-radius:10px; font-weight:600; transition: 0.3s; }
+        /* Menu Lateral */
+        .sidebar { width:240px; background:#0f172a; color:white; padding:20px; position:fixed; height:100vh; }
+        .nav-btn { width:100%; padding:12px; margin-bottom:5px; background:none; border:none; color:#94a3b8; text-align:left; cursor:pointer; border-radius:8px; font-weight:600; }
         .nav-btn:hover, .nav-btn.active { background:#1e293b; color:white; }
-        .nav-btn.active { background:var(--p); color:white; }
+        .nav-btn.active { background:var(--p); }
 
-        .main { margin-left:240px; padding:30px; flex:1; width: calc(100% - 240px); }
-        .card { background:white; padding:25px; border-radius:16px; border:1px solid #e2e8f0; margin-bottom:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); }
+        /* Area Principal */
+        .main { margin-left:240px; padding:30px; flex:1; }
+        .card { background:white; padding:20px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+        .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; }
         
-        /* TABLAS MODERNAS */
-        .table-container { overflow-x: auto; background: white; border-radius: 16px; border: 1px solid #e2e8f0; }
-        table { width:100%; border-collapse:collapse; }
-        th { background:#f8fafc; padding:15px; text-align:left; font-size:12px; color:#64748b; text-transform:uppercase; border-bottom:2px solid #f1f5f9; }
-        td { padding:15px; border-bottom:1px solid #f1f5f9; font-size:14px; }
+        /* Tablas */
+        table { width:100%; border-collapse:collapse; margin-top:10px; }
+        th, td { padding:12px; text-align:left; border-bottom:1px solid #e2e8f0; }
+        th { background:#f1f5f9; font-size:12px; text-transform:uppercase; color:#64748b; }
 
-        /* MODALES */
-        .modal-bg { position:fixed; inset:0; background:rgba(15, 23, 42, 0.8); display:none; align-items:center; justify-content:center; z-index:100; backdrop-filter: blur(4px); }
-        .modal { background:white; padding:30px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-        
-        input, select { width:100%; padding:12px; margin:10px 0; border:1px solid #cbd5e1; border-radius:10px; font-size:14px; background:#f8fafc; box-sizing: border-box; }
-        
-        .btn { padding:12px 20px; border-radius:10px; border:none; cursor:pointer; font-weight:700; transition: 0.2s; }
+        /* Modales */
+        .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:center; justify-content:center; z-index:100; }
+        .modal { background:white; padding:25px; border-radius:15px; width:100%; max-width:400px; }
+        input, select { width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:8px; }
+        .btn { padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-weight:bold; }
         .btn-p { background:var(--p); color:white; width:100%; }
-        .btn-p:active { transform: scale(0.98); }
         
-        #login { position:fixed; inset:0; background:var(--side); z-index:1000; display:flex; align-items:center; justify-content:center; }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 70px; padding: 10px; }
-            .sidebar h3, .nav-btn span { display: none; }
-            .main { margin-left: 70px; width: calc(100% - 70px); padding: 15px; }
-        }
+        #login { position:fixed; inset:0; background:#0f172a; z-index:1000; display:flex; align-items:center; justify-content:center; }
     </style>
 </head>
 <body>
 
 <div id="login">
     <div class="modal" style="text-align:center">
-        <h2 style="margin-bottom:5px">LUF193</h2>
-        <p style="color:#64748b; font-size:14px; margin-bottom:20px">Gestión de Tesorería</p>
-        <input type="password" id="pass" placeholder="Clave de Acceso">
-        <button class="btn btn-p" onclick="entrar()">ENTRAR AL SISTEMA</button>
+        <h2>Acceso LUF193</h2>
+        <input type="password" id="pass" placeholder="Contraseña">
+        <button class="btn btn-p" onclick="entrar()">ENTRAR</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <h3>🏛️ LUF193</h3>
-    <button class="nav-btn active" onclick="ver('inicio', this)">📊 <span>Inicio</span></button>
-    <button class="nav-btn" onclick="ver('socios', this)">👥 <span>Socios</span></button>
-    <button class="nav-btn" onclick="ver('libro', this)">📒 <span>Libro Contable</span></button>
-    <button class="nav-btn" onclick="ver('morosos', this)">⚠️ <span>Morosos</span></button>
-    
+    <h3>🏛️ LUF193</h3><br>
+    <button class="nav-btn active" onclick="ver('inicio', this)">📊 Inicio</button>
+    <button class="nav-btn" onclick="ver('socios', this)">👥 Socios</button>
+    <button class="nav-btn" onclick="ver('libro', this)">📒 Libro Contable</button>
+    <button class="nav-btn" onclick="ver('morosos', this)">⚠️ Morosos</button>
     <hr style="opacity:0.1; margin:20px 0">
-    
-    <button class="btn btn-p" onclick="abrir('m-ingreso')" style="background:#10b981; margin-bottom:10px">💰 Cobrar</button>
-    <button class="btn btn-p" onclick="abrir('m-egreso')" style="background:#ef4444; margin-bottom:10px">🧾 Gasto</button>
-    <button class="btn btn-p" onclick="abrir('m-socio')" style="background:#64748b">👤 +Socio</button>
-    
-    <button class="btn" style="width:100%; margin-top:20px; background:none; color:#94a3b8; border:1px solid #334155" onclick="descargar()">📥 Excel</button>
+    <button class="btn btn-p" onclick="abrir('m-ingreso')" style="background:#10b981">+ Cobrar Cuota</button>
+    <button class="btn btn-p" onclick="abrir('m-egreso')" style="background:#ef4444; margin-top:10px">- Registrar Gasto</button>
+    <button class="btn" onclick="abrir('m-socio')" style="width:100%; margin-top:10px; background:#64748b; color:white">+ Alta Socio</button>
+    <button class="btn" style="width:100%; margin-top:20px; background:#64748b; color:white" onclick="descargar()">📥 Excel</button>
 </div>
 
 <div class="main">
-    <h1 id="titulo" style="margin-bottom:25px; font-size:24px">Inicio</h1>
-    <div id="contenido">Cargando sistema...</div>
+    <h1 id="titulo">Inicio</h1>
+    <div id="contenido"></div>
 </div>
 
 <div class="modal-bg" id="m-socio">
@@ -89,29 +75,29 @@
         <h3>Nuevo Socio</h3>
         <input id="nom" placeholder="Nombre completo">
         <input id="tel" placeholder="Teléfono">
-        <input type="number" id="sal" placeholder="Saldo inicial (ej: -500)">
-        <button class="btn btn-p" onclick="guardarSocio()">Guardar Socio</button>
-        <button class="btn" style="width:100%; margin-top:10px" onclick="cerrar('m-socio')">Cancelar</button>
+        <input type="number" id="sal" placeholder="Saldo inicial (ej: -500 si debe)">
+        <button class="btn btn-p" onclick="guardarSocio()">Guardar</button>
+        <button class="btn" onclick="cerrar('m-socio')">Cerrar</button>
     </div>
 </div>
 
 <div class="modal-bg" id="m-ingreso">
     <div class="modal">
-        <h3>Registrar Cobro</h3>
+        <h3>Registrar Pago</h3>
         <select id="sel-socio"></select>
-        <input type="number" id="monto-i" placeholder="Monto a ingresar ($)">
-        <button class="btn btn-p" style="background:#10b981" onclick="guardarPago()">Confirmar Pago</button>
-        <button class="btn" style="width:100%; margin-top:10px" onclick="cerrar('m-ingreso')">Cancelar</button>
+        <input type="number" id="monto-i" placeholder="Monto que paga ($)">
+        <button class="btn btn-p" onclick="guardarPago()">Confirmar</button>
+        <button class="btn" onclick="cerrar('m-ingreso')">Cerrar</button>
     </div>
 </div>
 
 <div class="modal-bg" id="m-egreso">
     <div class="modal">
         <h3>Registrar Gasto</h3>
-        <input id="det-e" placeholder="Concepto (ej: UTE, Sueldos)">
+        <input id="det-e" placeholder="Concepto (ej: UTE)">
         <input type="number" id="monto-e" placeholder="Monto pagado ($)">
-        <button class="btn btn-p" style="background:#ef4444" onclick="guardarGasto()">Registrar Salida</button>
-        <button class="btn" style="width:100%; margin-top:10px" onclick="cerrar('m-egreso')">Cancelar</button>
+        <button class="btn btn-p" onclick="guardarGasto()">Registrar</button>
+        <button class="btn" onclick="cerrar('m-egreso')">Cerrar</button>
     </div>
 </div>
 
@@ -131,7 +117,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // FUNCIONES GLOBALES (VINCULADAS A WINDOW PARA QUE FUNCIONEN LOS ONCLICK)
+    // VINCULACIÓN AL OBJETO WINDOW PARA QUE LOS BOTONES NO FALLEN
     window.entrar = () => {
         if(document.getElementById('pass').value === "LUF2026") {
             document.getElementById('login').style.display = 'none';
@@ -146,62 +132,49 @@
         }
         document.getElementById('titulo').innerText = v.toUpperCase();
         const cont = document.getElementById('contenido');
-        cont.innerHTML = "Actualizando...";
 
         if(v === 'inicio'){
             const m = await getDocs(collection(db, "movimientos"));
             let total = 0; m.forEach(d => total += d.data().monto);
-            cont.innerHTML = `<div class="card" style="text-align:center">
-                <p style="color:#64748b; margin:0">Capital Total en Caja</p>
-                <h2 style="font-size:48px; margin:10px 0">$ ${total}</h2>
-            </div>`;
+            cont.innerHTML = `<div class="card"><h2>Caja del Club: $ ${total}</h2></div>`;
         } else if(v === 'socios'){
-            cont.innerHTML = `<div class="table-container"><table><thead><tr><th>Nombre</th><th>Tel</th><th>Saldo</th></tr></thead><tbody id="t"></tbody></table></div>`;
+            cont.innerHTML = `<button class="btn btn-p" style="width:200px" onclick="abrir('m-socio')">+ Nuevo Socio</button>
+            <div class="card"><table><thead><tr><th>Nombre</th><th>Tel</th><th>Saldo</th></tr></thead><tbody id="t"></tbody></table></div>`;
             const s = await getDocs(collection(db, "socios"));
             s.forEach(d => {
-                const color = d.data().saldo < 0 ? 'red' : 'green';
-                document.getElementById('t').innerHTML += `<tr><td>${d.data().nombre}</td><td>${d.data().tel}</td><td style="color:${color}; font-weight:bold">$ ${d.data().saldo}</td></tr>`;
+                document.getElementById('t').innerHTML += `<tr><td>${d.data().nombre}</td><td>${d.data().tel}</td><td>$ ${d.data().saldo}</td></tr>`;
             });
         } else if(v === 'libro'){
-            cont.innerHTML = `<div class="table-container"><table><thead><tr><th>Fecha</th><th>Detalle</th><th>Monto</th></tr></thead><tbody id="t"></tbody></table></div>`;
+            cont.innerHTML = `<div class="card"><table><thead><tr><th>Fecha</th><th>Detalle</th><th>Monto</th></tr></thead><tbody id="t"></tbody></table></div>`;
             const m = await getDocs(query(collection(db, "movimientos"), orderBy("fecha", "desc")));
             m.forEach(d => {
-                const f = d.data().fecha ? d.data().fecha.toDate().toLocaleDateString() : '---';
-                const color = d.data().monto < 0 ? '#ef4444' : '#10b981';
-                document.getElementById('t').innerHTML += `<tr><td>${f}</td><td>${d.data().detalle}</td><td style="color:${color}; font-weight:bold">$ ${d.data().monto}</td></tr>`;
+                document.getElementById('t').innerHTML += `<tr><td>${d.data().fecha?.toDate().toLocaleDateString() || 'Hoy'}</td><td>${d.data().detalle}</td><td>$ ${d.data().monto}</td></tr>`;
             });
         } else if(v === 'morosos'){
-            cont.innerHTML = `<div class="table-container"><table><thead><tr><th>Socio</th><th>Deuda Acumulada</th></tr></thead><tbody id="t"></tbody></table></div>`;
+            cont.innerHTML = `<div class="card"><table><thead><tr><th>Socio</th><th>Deuda</th></tr></thead><tbody id="t"></tbody></table></div>`;
             const s = await getDocs(collection(db, "socios"));
             s.forEach(d => {
-                if(d.data().saldo < 0) document.getElementById('t').innerHTML += `<tr><td>${d.data().nombre}</td><td style="color:red; font-weight:bold">$ ${d.data().saldo}</td></tr>`;
+                if(d.data().saldo < 0) document.getElementById('t').innerHTML += `<tr><td>${d.data().nombre}</td><td style="color:red">$ ${d.data().saldo}</td></tr>`;
             });
         }
     };
 
     window.guardarSocio = async () => {
-        const n = document.getElementById('nom').value;
-        const t = document.getElementById('tel').value;
-        const s = Number(document.getElementById('sal').value);
-        if(!n) return alert("Falta nombre");
-        await addDoc(collection(db, "socios"), { nombre: n, tel: t, saldo: s, fecha: serverTimestamp() });
+        await addDoc(collection(db, "socios"), { nombre: document.getElementById('nom').value, tel: document.getElementById('tel').value, saldo: Number(document.getElementById('sal').value), fecha: serverTimestamp() });
         location.reload();
     };
 
     window.guardarPago = async () => {
         const id = document.getElementById('sel-socio').value;
         const mt = Number(document.getElementById('monto-i').value);
-        if(!id || mt <= 0) return alert("Datos inválidos");
         await updateDoc(doc(db, "socios", id), { saldo: increment(mt) });
-        await addDoc(collection(db, "movimientos"), { detalle: `Cobro cuota`, monto: mt, fecha: serverTimestamp() });
+        await addDoc(collection(db, "movimientos"), { detalle: `Pago de cuota`, monto: mt, fecha: serverTimestamp() });
         location.reload();
     };
 
     window.guardarGasto = async () => {
-        const d = document.getElementById('det-e').value;
         const mt = Number(document.getElementById('monto-e').value);
-        if(!d || mt <= 0) return alert("Datos inválidos");
-        await addDoc(collection(db, "movimientos"), { detalle: d, monto: -mt, fecha: serverTimestamp() });
+        await addDoc(collection(db, "movimientos"), { detalle: document.getElementById('det-e').value, monto: -mt, fecha: serverTimestamp() });
         location.reload();
     };
 
@@ -215,11 +188,9 @@
     window.cerrar = (id) => document.getElementById(id).style.display = 'none';
 
     window.descargar = async () => {
-        const m = await getDocs(collection(db, "movimientos"));
-        const data = m.docs.map(d => ({ Fecha: d.data().fecha?.toDate(), Detalle: d.data().detalle, Monto: d.data().monto }));
-        const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Balance");
+        const m = await getDocs(collection(db, "movimientos"));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(m.docs.map(d => d.data())), "Balance");
         XLSX.writeFile(wb, "LUF193_Balance.xlsx");
     };
 </script>
