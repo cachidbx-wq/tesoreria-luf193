@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-title" content="LUF193">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 :root{--bg:#eef0fb;--s:#fff;--s2:#f4f5fd;--bd:#dde0f0;--a:#6b8ef5;--a2:#a07cf6;--g:#2eb870;--y:#e8a820;--o:#e87840;--r:#e85560;--tl:#22b8a4;--tx:#1e2547;--t2:#5a6285;--t3:#9da4c2}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -128,6 +130,15 @@ select option{background:var(--s)}
 </head>
 <body>
 <div id="toast"></div>
+
+<!-- LOADING -->
+<div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999">
+  <div style="font-size:40px;margin-bottom:16px">🏛️</div>
+  <div style="font-size:18px;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px">LUF193 TESORERÍA</div>
+  <div style="width:40px;height:40px;border:3px solid var(--bd);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite"></div>
+  <div style="font-size:12px;color:var(--t2);margin-top:12px">Cargando datos...</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 <div id="LS">
   <div class="lcard">
     <div style="font-size:34px;margin-bottom:6px">🏛️</div>
@@ -995,6 +1006,25 @@ function expReporte(){
   var csv='Mes,Ingresos,Gastos,Saldo\n'+rows.map(function(r){return MA(r.m,r.a)+','+r.i+','+r.g+','+(r.i-r.g);}).join('\n');
   var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='luf193_tesoreria.csv';a.click();
 }
+
+// ===== INIT =====
+// Escuchar cambios en tiempo real
+DOC.onSnapshot(function(snap){
+  var data = snap.exists ? snap.data() : null;
+  if(data){
+    Object.assign(DB, data);
+    ['socios','cuotas','cobros','gastos','cuentas','movs','apertura','ajustes'].forEach(function(k){if(!DB[k])DB[k]=[];});
+    if(!DB.ids)DB.ids={s:1,c:1,co:1,g:1,cu:1,mv:1,ap:1,aj:1};
+    if(!DB.cfg)DB.cfg={monto_cuota:5000};
+  }
+  var loading = document.getElementById('loading');
+  if(loading) loading.style.display = 'none';
+  if(CU && !saving) render(curPage);
+}, function(err){
+  console.error('Error Firestore:',err);
+  document.getElementById('loading').style.display = 'none';
+  toast('Error de conexión con la base de datos','e');
+});
 
 load();
 autoQs();
