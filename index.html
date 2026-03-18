@@ -1,11 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>LUF193 Tesorería</title>
-<!-- PWA -->
 <meta name="theme-color" content="#6b8ef5">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -130,8 +128,6 @@ select option{background:var(--s)}
 </head>
 <body>
 <div id="toast"></div>
-
-<!-- LOGIN -->
 <div id="LS">
   <div class="lcard">
     <div style="font-size:34px;margin-bottom:6px">🏛️</div>
@@ -153,8 +149,6 @@ select option{background:var(--s)}
     </div>
   </div>
 </div>
-
-<!-- APP -->
 <div id="AP">
   <div class="sbo" id="SBO" onclick="closeSB()"></div>
   <div class="sb" id="SB">
@@ -183,7 +177,7 @@ select option{background:var(--s)}
       <div class="uch">
         <div class="uav" id="uav">A</div>
         <div><div style="font-size:13px;font-weight:600" id="uname">Admin</div><div style="font-size:11px;color:var(--t2)" id="urole">Administrador</div></div>
-        <button onclick="doLogout()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--t3);font-size:15px;padding:4px;border-radius:6px" title="Salir">⏻</button>
+        <button onclick="doLogout()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--t3);font-size:15px;padding:4px;border-radius:6px">⏻</button>
       </div>
     </div>
   </div>
@@ -254,7 +248,6 @@ select option{background:var(--s)}
 
 <div class="mo" id="m-ajuste"><div class="md">
   <div class="mh"><div class="mtit">⚖️ Ajuste de Saldo</div><button class="mcl" onclick="closeM('m-ajuste')">✕</button></div>
-  <div style="background:var(--s2);border-radius:8px;padding:10px;font-size:12px;color:var(--t2);margin-bottom:14px;border:1px solid var(--bd)">Ajuste manual del saldo. Usalo para correcciones, bonificaciones o recargos.</div>
   <div class="fg"><label>Socio</label><div id="aj-nombre" style="padding:8px 11px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;font-size:13px;font-weight:600"></div></div>
   <div class="fg"><label>Tipo</label>
     <div class="atog"><button class="ab apos" id="aj-pos" onclick="setAJ('pos')">🟢 Crédito a favor</button><button class="ab" id="aj-neg" onclick="setAJ('neg')">🔴 Débito / cargo</button></div>
@@ -295,7 +288,7 @@ select option{background:var(--s)}
   <div class="fg"><label>Monto ($)</label><input type="number" id="mm" placeholder="0"></div>
   <div class="fg"><label>Fecha</label><input type="date" id="mf"></div>
   <div class="fg"><label>Concepto</label><input id="mcon" placeholder="Descripción"></div>
-  <div class="fg"><label>Referencia (opcional)</label><input id="mref" placeholder="N° transacción, cheque..."></div>
+  <div class="fg"><label>Referencia (opcional)</label><input id="mref" placeholder="N° transacción..."></div>
   <div style="display:flex;gap:8px;margin-top:6px">
     <button class="btn bgh" style="flex:1" onclick="closeM('m-mov')">Cancelar</button>
     <button class="btn bp" style="flex:1" onclick="confirmMov()">Guardar</button>
@@ -339,89 +332,67 @@ select option{background:var(--s)}
 </div></div>
 
 <script>
-// ===== DATA =====
-let DB={
-  cfg:{monto_cuota:5000},
-  socios:[],cuotas:[],cobros:[],gastos:[],
-  cuentas:[],movs:[],apertura:[],ajustes:[],
-  users:[{user:'admin',pass:'1234',role:'admin',name:'Administrador'}],
-  ids:{s:1,c:1,co:1,g:1,cu:1,mv:1,ap:1,aj:1}
-};
-let CU=null,editSId=null,editGId=null,editCuId=null,curPage='dashboard';
-let cMP='efectivo',ajTipo='pos',apMetodo='efectivo',filtMov=null,apTab='excel';
-let importData=null;
-
-const MF=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const MFUL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const CICONS={banco:'🏦',caja:'💵',ahorro:'💰',corriente:'🏧'};
-const CATICONS={comida:'🍽️',bebidas:'🍺',mantenimiento:'🔧',eventos:'🎉',otros:'📦'};
+var DB={cfg:{monto_cuota:5000},socios:[],cuotas:[],cobros:[],gastos:[],cuentas:[],movs:[],apertura:[],ajustes:[],users:[{user:'admin',pass:'1234',role:'admin',name:'Administrador'}],ids:{s:1,c:1,co:1,g:1,cu:1,mv:1,ap:1,aj:1}};
+var CU=null,editSId=null,editGId=null,editCuId=null,curPage='dashboard';
+var cMP='efectivo',ajTipo='pos',apMetodoStr='efectivo',filtMov=null,apTab='excel';
+var importData=null;
+var MF=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var MFUL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var CICONS={banco:'🏦',caja:'💵',ahorro:'💰',corriente:'🏧'};
+var CATICONS={comida:'🍽️',bebidas:'🍺',mantenimiento:'🔧',eventos:'🎉',otros:'📦'};
 
 function save(){try{localStorage.setItem('luf193',JSON.stringify(DB));}catch(e){}}
 function load(){
-  try{const d=localStorage.getItem('luf193');if(d)Object.assign(DB,JSON.parse(d));}catch(e){}
-  ['socios','cuotas','cobros','gastos','cuentas','movs','apertura','ajustes'].forEach(k=>{if(!DB[k])DB[k]=[];});
+  try{var d=localStorage.getItem('luf193');if(d)Object.assign(DB,JSON.parse(d));}catch(e){}
+  ['socios','cuotas','cobros','gastos','cuentas','movs','apertura','ajustes'].forEach(function(k){if(!DB[k])DB[k]=[];});
   if(!DB.ids)DB.ids={s:1,c:1,co:1,g:1,cu:1,mv:1,ap:1,aj:1};
   if(!DB.cfg)DB.cfg={monto_cuota:5000};
 }
 function nid(k){DB.ids[k]=(DB.ids[k]||1);return DB.ids[k]++;}
-
-// ===== UTILS =====
-const fmt=n=>'$'+Number(n||0).toLocaleString('es-AR');
-const fmtS=n=>(n>=0?'+':'')+fmt(n);
-const MA=(m,a)=>`${MFUL[m-1]} ${a}`;
-const today=()=>new Date().toISOString().split('T')[0];
-const tMonth=()=>{const n=new Date();return`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;};
-
-function getSCuenta(id){
-  const c=DB.cuentas.find(x=>x.id===id);if(!c)return 0;
-  return(c.si||0)+DB.movs.filter(m=>m.cid===id).reduce((a,m)=>a+m.n,0);
-}
-const getTotCuentas=()=>DB.cuentas.filter(c=>c.act).reduce((a,c)=>a+getSCuenta(c.id),0);
-
-function getMorosos(sid){
-  const now=new Date();
-  return DB.cuotas.filter(c=>c.sid==sid&&c.est==='p'&&new Date(c.a,c.m-1)<=new Date(now.getFullYear(),now.getMonth())).length;
-}
+function fmt(n){return'$'+Number(n||0).toLocaleString('es-AR');}
+function fmtS(n){return(n>=0?'+':'')+fmt(n);}
+function MA(m,a){return MFUL[m-1]+' '+a;}
+function today(){return new Date().toISOString().split('T')[0];}
+function tMonth(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
+function getSCuenta(id){var c=DB.cuentas.find(function(x){return x.id===id;});if(!c)return 0;return(c.si||0)+DB.movs.filter(function(m){return m.cid===id;}).reduce(function(a,m){return a+m.n;},0);}
+function getTotCuentas(){return DB.cuentas.filter(function(c){return c.act;}).reduce(function(a,c){return a+getSCuenta(c.id);},0);}
+function getMorosos(sid){var now=new Date();return DB.cuotas.filter(function(c){return c.sid==sid&&c.est==='p'&&new Date(c.a,c.m-1)<=new Date(now.getFullYear(),now.getMonth());}).length;}
 function getSaldoSocio(sid){
-  const ap=DB.apertura.filter(a=>a.sid==sid).reduce((a,x)=>a+(x.t==='a'?x.v:-x.v),0);
-  const aj=DB.ajustes.filter(a=>a.sid==sid).reduce((a,x)=>a+x.n,0);
-  const co=DB.cobros.filter(c=>c.sid==sid).reduce((a,c)=>a+c.v,0);
-  const de=DB.cuotas.filter(c=>c.sid==sid&&c.est==='p').reduce((a,c)=>a+c.v,0);
-  return{ap,aj,co,de,s:ap+aj+co-de};
+  var ap=DB.apertura.filter(function(a){return a.sid==sid;}).reduce(function(a,x){return a+(x.t==='a'?x.v:-x.v);},0);
+  var aj=DB.ajustes.filter(function(a){return a.sid==sid;}).reduce(function(a,x){return a+x.n;},0);
+  var co=DB.cobros.filter(function(c){return c.sid==sid;}).reduce(function(a,c){return a+c.v;},0);
+  var de=DB.cuotas.filter(function(c){return c.sid==sid&&c.est==='p';}).reduce(function(a,c){return a+c.v;},0);
+  return{ap:ap,aj:aj,co:co,de:de,s:ap+aj+co-de};
 }
-
 function autoQs(){
-  const now=new Date();const m=now.getMonth()+1;const a=now.getFullYear();
-  DB.socios.filter(s=>s.est==='activo').forEach(s=>{
-    if(!DB.cuotas.find(c=>c.sid===s.id&&c.m===m&&c.a===a))
-      DB.cuotas.push({id:nid('c'),sid:s.id,m,a,n:'Cuota mensual',v:DB.cfg.monto_cuota,est:'p',fp:null});
+  var now=new Date();var m=now.getMonth()+1;var a=now.getFullYear();
+  DB.socios.filter(function(s){return s.est==='activo';}).forEach(function(s){
+    if(!DB.cuotas.find(function(c){return c.sid===s.id&&c.m===m&&c.a===a;}))
+      DB.cuotas.push({id:nid('c'),sid:s.id,m:m,a:a,n:'Cuota mensual',v:DB.cfg.monto_cuota,est:'p',fp:null});
   });save();
 }
 function autoQsS(s){
-  const now=new Date();const m=now.getMonth()+1;const a=now.getFullYear();
-  if(!DB.cuotas.find(c=>c.sid===s.id&&c.m===m&&c.a===a))
-    DB.cuotas.push({id:nid('c'),sid:s.id,m,a,n:'Cuota mensual',v:DB.cfg.monto_cuota,est:'p',fp:null});
+  var now=new Date();var m=now.getMonth()+1;var a=now.getFullYear();
+  if(!DB.cuotas.find(function(c){return c.sid===s.id&&c.m===m&&c.a===a;}))
+    DB.cuotas.push({id:nid('c'),sid:s.id,m:m,a:a,n:'Cuota mensual',v:DB.cfg.monto_cuota,est:'p',fp:null});
 }
 
-// ===== AUTH =====
-let lRole='admin';
+// AUTH
+var lRole='admin';
 function setRole(r){
   lRole=r;
-  document.querySelectorAll('.ltab').forEach((t,i)=>t.classList.toggle('on',(i===0&&r==='admin')||(i===1&&r==='socio')));
+  document.querySelectorAll('.ltab').forEach(function(t,i){t.classList.toggle('on',(i===0&&r==='admin')||(i===1&&r==='socio'));});
   document.getElementById('lf-admin').style.display=r==='admin'?'':'none';
   document.getElementById('lf-socio').style.display=r==='socio'?'':'none';
-  if(r==='socio'){
-    const sel=document.getElementById('lsid');
-    sel.innerHTML='<option value="">Seleccionar...</option>'+DB.socios.filter(s=>s.est==='activo').map(s=>`<option value="${s.id}">${s.n}</option>`).join('');
-  }
+  if(r==='socio'){var sel=document.getElementById('lsid');sel.innerHTML='<option value="">Seleccionar...</option>'+DB.socios.filter(function(s){return s.est==='activo';}).map(function(s){return'<option value="'+s.id+'">'+s.n+'</option>';}).join('');}
 }
 function doLogin(){
-  const usr=DB.users.find(x=>x.user===document.getElementById('lu').value&&x.pass===document.getElementById('lp').value);
+  var usr=DB.users.find(function(x){return x.user===document.getElementById('lu').value&&x.pass===document.getElementById('lp').value;});
   if(usr){CU=usr;startApp();}else toast('Usuario o contraseña incorrectos','e');
 }
 function doLoginSocio(){
-  const id=document.getElementById('lsid').value;if(!id){toast('Seleccioná tu nombre','e');return;}
-  const s=DB.socios.find(x=>x.id==id);
+  var id=document.getElementById('lsid').value;if(!id){toast('Seleccioná tu nombre','e');return;}
+  var s=DB.socios.find(function(x){return x.id==id;});
   if(s){CU={user:'s'+id,role:'socio',name:s.n,sid:s.id};startApp();}
 }
 function doLogout(){CU=null;document.getElementById('AP').style.display='none';document.getElementById('LS').style.display='flex';}
@@ -432,17 +403,17 @@ function startApp(){
   document.getElementById('urole').textContent=CU.role==='admin'?'Administrador':'Socio';
   document.getElementById('sb-sub').textContent=CU.role==='admin'?'Acceso total':'Portal socio';
   if(CU.role!=='admin'){
-    ['n-cuentas','n-apertura','n-libro','n-tes','n-cfg','ngl-fin','ngl-cont'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-    document.querySelectorAll('[data-p]').forEach(el=>{if(!['dashboard','historial'].includes(el.dataset.p))el.style.display='none';});
+    ['n-cuentas','n-apertura','n-libro','n-tes','n-cfg','ngl-fin','ngl-cont'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+    document.querySelectorAll('[data-p]').forEach(function(el){if(!['dashboard','historial'].includes(el.dataset.p))el.style.display='none';});
   }
   go(CU.role==='admin'?'dashboard':'historial');
 }
 
-// ===== NAV =====
+// NAV
 function go(p){
   curPage=p;
-  document.querySelectorAll('.ni').forEach(el=>el.classList.toggle('on',el.dataset.p===p));
-  const titles={dashboard:'📊 Dashboard',cobro:'💳 Registrar Cobro',socios:'👥 Socios',historial:'📋 Historial',morosos:'⚠️ Morosos',gastos:'🧾 Gastos',cuentas:'🏦 Cuentas Bancarias',apertura:'📂 Apertura Contable',libro:'📒 Libro Contable',tesoreria:'💰 Panel Tesorería',config:'⚙️ Configuración'};
+  document.querySelectorAll('.ni').forEach(function(el){el.classList.toggle('on',el.dataset.p===p);});
+  var titles={dashboard:'📊 Dashboard',cobro:'💳 Registrar Cobro',socios:'👥 Socios',historial:'📋 Historial',morosos:'⚠️ Morosos',gastos:'🧾 Gastos',cuentas:'🏦 Cuentas Bancarias',apertura:'📂 Apertura Contable',libro:'📒 Libro Contable',tesoreria:'💰 Panel Tesorería',config:'⚙️ Configuración'};
   document.getElementById('ptitle').textContent=titles[p]||p;
   document.getElementById('pactions').innerHTML='';
   closeSB();render(p);
@@ -451,101 +422,92 @@ function toggleSB(){document.getElementById('SB').classList.toggle('on');documen
 function closeSB(){document.getElementById('SB').classList.remove('on');document.getElementById('SBO').classList.remove('on');}
 function openM(id){document.getElementById(id).classList.add('on');}
 function closeM(id){document.getElementById(id).classList.remove('on');}
-let toastT;
-function toast(msg,type='s'){
-  const el=document.getElementById('toast');
+var toastT;
+function toast(msg,type){
+  type=type||'s';
+  var el=document.getElementById('toast');
   el.textContent=(type==='s'?'✓ ':type==='w'?'⚠ ':'✕ ')+msg;
-  el.className=`on t${type}`;clearTimeout(toastT);toastT=setTimeout(()=>el.className='',3200);
+  el.className='on t'+type;clearTimeout(toastT);toastT=setTimeout(function(){el.className='';},3200);
 }
 
-// ===== RENDER =====
+// RENDER
 function render(p){
-  const pc=document.getElementById('PC');
-  const map={dashboard:rDashboard,cobro:rCobro,socios:rSocios,historial:rHistorial,morosos:rMorosos,gastos:rGastos,cuentas:rCuentas,apertura:rApertura,libro:rLibro,tesoreria:rTesoreria,config:rConfig};
-  pc.innerHTML=(map[p]||(() => ''))();
+  var pc=document.getElementById('PC');
+  var map={dashboard:rDashboard,cobro:rCobro,socios:rSocios,historial:rHistorial,morosos:rMorosos,gastos:rGastos,cuentas:rCuentas,apertura:rApertura,libro:rLibro,tesoreria:rTesoreria,config:rConfig};
+  pc.innerHTML=(map[p]||function(){return'';})();
 }
 
-// --- DASHBOARD ---
 function rDashboard(){
-  const act=DB.socios.filter(s=>s.est==='activo').length;
-  const tco=DB.cobros.reduce((a,c)=>a+c.v,0);
-  const tga=DB.gastos.reduce((a,g)=>a+g.v,0);
-  const tba=getTotCuentas();
-  const now=new Date();
-  const mes=DB.cobros.filter(c=>c.f&&c.f.startsWith(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`)).reduce((a,c)=>a+c.v,0);
-  const deu=DB.cuotas.filter(c=>c.est==='p').reduce((a,c)=>a+c.v,0);
-  const alD=DB.socios.filter(s=>s.est==='activo'&&getMorosos(s.id)===0).length;
-  const m1=DB.socios.filter(s=>s.est==='activo'&&getMorosos(s.id)===1).length;
-  const m2=DB.socios.filter(s=>s.est==='activo'&&getMorosos(s.id)===2).length;
-  const m3=DB.socios.filter(s=>s.est==='activo'&&getMorosos(s.id)>=3).length;
-  return`<div class="hero"><h2>¡Bienvenido a LUF193!</h2><p>Registrá cobros, gestioná socios y llevá la contabilidad del club</p><button class="btn bg_ bl" onclick="openCobro()">💳 Registrar Cobro</button></div>
-  <div class="g4" style="margin-bottom:14px">
-    <div class="sc cb"><div class="sl">Socios Activos</div><div class="sv vb">${act}</div></div>
-    <div class="sc cg"><div class="sl">Total Cobrado</div><div class="sv vg">${fmt(tco)}</div></div>
-    <div class="sc ct"><div class="sl">En Cuentas</div><div class="sv vt">${fmt(tba)}</div></div>
-    <div class="sc ${tco-tga>=0?'cg':'cr'}"><div class="sl">Saldo Neto</div><div class="sv ${tco-tga>=0?'vg':'vr'}">${fmt(tco-tga)}</div></div>
-  </div>
-  <div class="g2" style="margin-bottom:14px">
-    <div class="card"><div class="ctit">Estado de socios</div>
-      <div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--g);display:inline-block"></span>Al día</span><strong class="vg">${alD}</strong></div>
-      <div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--y);display:inline-block"></span>1 mes</span><strong class="vy">${m1}</strong></div>
-      <div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--o);display:inline-block"></span>2 meses</span><strong style="color:var(--o)">${m2}</strong></div>
-      <div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--r);display:inline-block"></span>3+ meses</span><strong class="vr">${m3}</strong></div>
-    </div>
-    <div class="card"><div class="ctit">Resumen financiero</div>
-      <div class="crow"><span>Cobrado este mes</span><strong class="vg">${fmt(mes)}</strong></div>
-      <div class="crow"><span>Deuda pendiente</span><strong class="vr">${fmt(deu)}</strong></div>
-      <div class="crow"><span>Gastos del club</span><strong style="color:var(--o)">${fmt(tga)}</strong></div>
-      <div class="crow"><span>Saldo en cuentas</span><strong class="vt">${fmt(tba)}</strong></div>
-    </div>
-  </div>
-  <div class="card"><div class="ctit">Acciones rápidas</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-      <button class="btn bp" onclick="go('socios');setTimeout(()=>openSocio(),100)">+ Socio</button>
-      <button class="btn bgh" onclick="go('cuentas');setTimeout(()=>openMCuenta(),100)">+ Cuenta</button>
-      <button class="btn bgh" onclick="go('gastos');setTimeout(()=>openGasto(),100)">+ Gasto</button>
-      <button class="btn bgh" onclick="go('apertura')">📂 Apertura</button>
-      <button class="btn bgh" onclick="go('libro')">📒 Libro</button>
-    </div>
-  </div>`;
+  var act=DB.socios.filter(function(s){return s.est==='activo';}).length;
+  var tco=DB.cobros.reduce(function(a,c){return a+c.v;},0);
+  var tga=DB.gastos.reduce(function(a,g){return a+g.v;},0);
+  var tba=getTotCuentas();
+  var now=new Date();
+  var mes=DB.cobros.filter(function(c){return c.f&&c.f.startsWith(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));}).reduce(function(a,c){return a+c.v;},0);
+  var deu=DB.cuotas.filter(function(c){return c.est==='p';}).reduce(function(a,c){return a+c.v;},0);
+  var alD=DB.socios.filter(function(s){return s.est==='activo'&&getMorosos(s.id)===0;}).length;
+  var m1=DB.socios.filter(function(s){return s.est==='activo'&&getMorosos(s.id)===1;}).length;
+  var m2=DB.socios.filter(function(s){return s.est==='activo'&&getMorosos(s.id)===2;}).length;
+  var m3=DB.socios.filter(function(s){return s.est==='activo'&&getMorosos(s.id)>=3;}).length;
+  return '<div class="hero"><h2>¡Bienvenido a LUF193!</h2><p>Registrá cobros, gestioná socios y llevá la contabilidad del club</p><button class="btn bg_ bl" onclick="openCobro()">💳 Registrar Cobro</button></div>'+
+  '<div class="g4" style="margin-bottom:14px">'+
+  '<div class="sc cb"><div class="sl">Socios Activos</div><div class="sv vb">'+act+'</div></div>'+
+  '<div class="sc cg"><div class="sl">Total Cobrado</div><div class="sv vg">'+fmt(tco)+'</div></div>'+
+  '<div class="sc ct"><div class="sl">En Cuentas</div><div class="sv vt">'+fmt(tba)+'</div></div>'+
+  '<div class="sc '+(tco-tga>=0?'cg':'cr')+'"><div class="sl">Saldo Neto</div><div class="sv '+(tco-tga>=0?'vg':'vr')+'">'+fmt(tco-tga)+'</div></div>'+
+  '</div>'+
+  '<div class="g2" style="margin-bottom:14px">'+
+  '<div class="card"><div class="ctit">Estado de socios</div>'+
+  '<div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--g);display:inline-block"></span>Al día</span><strong class="vg">'+alD+'</strong></div>'+
+  '<div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--y);display:inline-block"></span>1 mes</span><strong class="vy">'+m1+'</strong></div>'+
+  '<div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--o);display:inline-block"></span>2 meses</span><strong style="color:var(--o)">'+m2+'</strong></div>'+
+  '<div class="crow"><span style="display:flex;align-items:center;gap:7px"><span style="width:8px;height:8px;border-radius:50%;background:var(--r);display:inline-block"></span>3+ meses</span><strong class="vr">'+m3+'</strong></div>'+
+  '</div>'+
+  '<div class="card"><div class="ctit">Resumen financiero</div>'+
+  '<div class="crow"><span>Cobrado este mes</span><strong class="vg">'+fmt(mes)+'</strong></div>'+
+  '<div class="crow"><span>Deuda pendiente</span><strong class="vr">'+fmt(deu)+'</strong></div>'+
+  '<div class="crow"><span>Gastos del club</span><strong style="color:var(--o)">'+fmt(tga)+'</strong></div>'+
+  '<div class="crow"><span>Saldo en cuentas</span><strong class="vt">'+fmt(tba)+'</strong></div>'+
+  '</div></div>'+
+  '<div class="card"><div class="ctit">Acciones rápidas</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+
+  '<button class="btn bp" onclick="go(\'socios\');setTimeout(function(){openSocio();},100)">+ Socio</button>'+
+  '<button class="btn bgh" onclick="go(\'cuentas\');setTimeout(function(){openMCuenta();},100)">+ Cuenta</button>'+
+  '<button class="btn bgh" onclick="go(\'gastos\');setTimeout(function(){openGasto();},100)">+ Gasto</button>'+
+  '<button class="btn bgh" onclick="go(\'apertura\')">📂 Apertura</button>'+
+  '<button class="btn bgh" onclick="go(\'libro\')">📒 Libro</button>'+
+  '</div></div>';
 }
 
-// --- SOCIOS ---
-let sfilt='';
+var sfilt='';
 function rSocios(){
-  document.getElementById('pactions').innerHTML=`<button class="btn bp bs" onclick="openSocio()">+ Agregar</button>`;
-  const f=DB.socios.filter(s=>s.n.toLowerCase().includes(sfilt.toLowerCase()));
-  return`<div style="margin-bottom:12px;display:flex;gap:10px;align-items:center">
-    <div class="sr" style="flex:1"><span class="si">🔍</span><input placeholder="Buscar socio..." value="${sfilt}" oninput="sfilt=this.value;render('socios')"></div>
-    <span style="font-size:12px;color:var(--t2)">${f.length} socios</span>
-  </div>
-  <div class="tw"><table><thead><tr><th>#</th><th>Nombre</th><th class="hm">Tel</th><th>Estado</th><th>Cuotas</th><th>Saldo</th><th>Acc.</th></tr></thead><tbody>
-  ${!f.length?`<tr><td colspan="7"><div class="es">👥<div>Sin socios</div></div></td></tr>`:
-    f.map(s=>{
-      const d=getMorosos(s.id);const{s:sal}=getSaldoSocio(s.id);
-      const db=d===0?`<span class="bk kg">Al día</span>`:d===1?`<span class="bk ky">${d} mes</span>`:d===2?`<span class="bk ko">${d} meses</span>`:`<span class="bk kr">${d}+ meses</span>`;
-      return`<tr><td style="font-family:'DM Mono';font-size:11px;color:var(--t3)">${s.id}</td><td><strong>${s.n}</strong></td><td class="hm" style="color:var(--t2)">${s.tel||'—'}</td><td><span class="bk ${s.est==='activo'?'kg':'kx'}">${s.est}</span></td><td>${s.est==='activo'?db:'<span style="color:var(--t3)">—</span>'}</td><td style="font-family:'DM Mono';font-weight:700;color:${sal>=0?'var(--g)':'var(--r)'}">${fmt(sal)}</td><td><div style="display:flex;gap:4px"><button class="btn bgh bs" onclick="openSocio(${s.id})">✏️</button><button class="btn bgh bs" style="color:var(--a)" onclick="verSocio(${s.id})">📒</button><button class="btn bwy bs" onclick="openAjuste(${s.id})">⚖️</button><button class="btn bgh bs" onclick="togSocio(${s.id})">${s.est==='activo'?'🚫':'✅'}</button></div></td></tr>`;
-    }).join('')}
-  </tbody></table></div>`;
+  document.getElementById('pactions').innerHTML='<button class="btn bp bs" onclick="openSocio()">+ Agregar</button>';
+  var f=DB.socios.filter(function(s){return s.n.toLowerCase().includes(sfilt.toLowerCase());});
+  var rows=!f.length?'<tr><td colspan="7"><div class="es">👥<div>Sin socios</div></div></td></tr>':
+    f.map(function(s){
+      var d=getMorosos(s.id);var sal=getSaldoSocio(s.id).s;
+      var db=d===0?'<span class="bk kg">Al día</span>':d===1?'<span class="bk ky">'+d+' mes</span>':d===2?'<span class="bk ko">'+d+' meses</span>':'<span class="bk kr">'+d+'+ meses</span>';
+      return'<tr><td style="font-family:\'DM Mono\';font-size:11px;color:var(--t3)">'+s.id+'</td><td><strong>'+s.n+'</strong></td><td class="hm" style="color:var(--t2)">'+(s.tel||'—')+'</td><td><span class="bk '+(s.est==='activo'?'kg':'kx')+'">'+s.est+'</span></td><td>'+(s.est==='activo'?db:'<span style="color:var(--t3)">—</span>')+'</td><td style="font-family:\'DM Mono\';font-weight:700;color:'+(sal>=0?'var(--g)':'var(--r)')+'">'+fmt(sal)+'</td><td><div style="display:flex;gap:4px"><button class="btn bgh bs" onclick="openSocio('+s.id+')">✏️</button><button class="btn bgh bs" style="color:var(--a)" onclick="verSocio('+s.id+')">📒</button><button class="btn bwy bs" onclick="openAjuste('+s.id+')">⚖️</button><button class="btn bgh bs" onclick="togSocio('+s.id+')">'+(s.est==='activo'?'🚫':'✅')+'</button></div></td></tr>';
+    }).join('');
+  return'<div style="margin-bottom:12px;display:flex;gap:10px;align-items:center"><div class="sr" style="flex:1"><span class="si">🔍</span><input placeholder="Buscar socio..." value="'+sfilt+'" oninput="sfilt=this.value;render(\'socios\')" style="padding-left:30px"></div><span style="font-size:12px;color:var(--t2)">'+f.length+' socios</span></div>'+
+  '<div class="tw"><table><thead><tr><th>#</th><th>Nombre</th><th class="hm">Tel</th><th>Estado</th><th>Cuotas</th><th>Saldo</th><th>Acc.</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function openSocio(id){
   editSId=id||null;
   document.getElementById('ms-tit').textContent=id?'Editar Socio':'Agregar Socio';
-  const s=id?DB.socios.find(x=>x.id===id):null;
+  var s=id?DB.socios.find(function(x){return x.id===id;}):null;
   document.getElementById('sn').value=s?s.n:'';document.getElementById('st').value=s?s.tel:'';
   document.getElementById('sf').value=s?s.fi:today();document.getElementById('se').value=s?s.est:'activo';
   openM('m-socio');
 }
 function saveSocio(){
-  const n=document.getElementById('sn').value.trim();if(!n){toast('Ingresá el nombre','e');return;}
-  if(editSId){const s=DB.socios.find(x=>x.id===editSId);s.n=n;s.tel=document.getElementById('st').value;s.fi=document.getElementById('sf').value;s.est=document.getElementById('se').value;}
-  else{const s={id:nid('s'),n,tel:document.getElementById('st').value,fi:document.getElementById('sf').value,est:document.getElementById('se').value};DB.socios.push(s);if(s.est==='activo')autoQsS(s);}
+  var n=document.getElementById('sn').value.trim();if(!n){toast('Ingresá el nombre','e');return;}
+  if(editSId){var s=DB.socios.find(function(x){return x.id===editSId;});s.n=n;s.tel=document.getElementById('st').value;s.fi=document.getElementById('sf').value;s.est=document.getElementById('se').value;}
+  else{var s={id:nid('s'),n:n,tel:document.getElementById('st').value,fi:document.getElementById('sf').value,est:document.getElementById('se').value};DB.socios.push(s);if(s.est==='activo')autoQsS(s);}
   save();closeM('m-socio');toast(editSId?'Socio actualizado':'Socio agregado');render('socios');
 }
-function togSocio(id){const s=DB.socios.find(x=>x.id===id);s.est=s.est==='activo'?'inactivo':'activo';if(s.est==='activo')autoQsS(s);save();toast('Estado actualizado');render('socios');}
+function togSocio(id){var s=DB.socios.find(function(x){return x.id===id;});s.est=s.est==='activo'?'inactivo':'activo';if(s.est==='activo')autoQsS(s);save();toast('Estado actualizado');render('socios');}
 
-// --- AJUSTE SALDO ---
-let ajSid=null;
+var ajSid=null;
 function setAJ(t){
   ajTipo=t;
   document.getElementById('aj-pos').className='ab'+(t==='pos'?' apos':'');
@@ -554,9 +516,9 @@ function setAJ(t){
   updAJPreview();
 }
 function updAJPreview(){
-  const v=parseFloat(document.getElementById('aj-monto').value)||0;
+  var v=parseFloat(document.getElementById('aj-monto').value)||0;
   if(!ajSid||!v){document.getElementById('aj-preview').style.display='none';return;}
-  const{s}=getSaldoSocio(ajSid);const d=ajTipo==='pos'?v:-v;const nv=s+d;
+  var s=getSaldoSocio(ajSid).s;var d=ajTipo==='pos'?v:-v;var nv=s+d;
   document.getElementById('aj-preview').style.display='';
   document.getElementById('aj-actual').textContent=fmt(s);
   document.getElementById('aj-delta').style.color=d>=0?'var(--g)':'var(--r)';document.getElementById('aj-delta').textContent=fmtS(d);
@@ -564,38 +526,36 @@ function updAJPreview(){
 }
 function openAjuste(sid){
   ajSid=sid;ajTipo='pos';
-  const s=DB.socios.find(x=>x.id===sid);
+  var s=DB.socios.find(function(x){return x.id===sid;});
   document.getElementById('aj-nombre').textContent=s?s.n:'';
   document.getElementById('aj-pos').className='ab apos';document.getElementById('aj-neg').className='ab';
   document.getElementById('aj-hint').textContent='El saldo del socio aumentará';
   document.getElementById('aj-monto').value='';document.getElementById('aj-con').value='';document.getElementById('aj-fecha').value=today();
-  document.getElementById('aj-preview').style.display='none';
-  openM('m-ajuste');
+  document.getElementById('aj-preview').style.display='none';openM('m-ajuste');
 }
 function confirmAjuste(){
-  const v=parseFloat(document.getElementById('aj-monto').value);const con=document.getElementById('aj-con').value.trim();
+  var v=parseFloat(document.getElementById('aj-monto').value);var con=document.getElementById('aj-con').value.trim();
   if(!v||v<=0){toast('Ingresá un monto','e');return;}if(!con){toast('Ingresá el concepto','e');return;}
-  DB.ajustes.push({id:nid('aj'),sid:ajSid,t:ajTipo,n:ajTipo==='pos'?v:-v,v,con,f:document.getElementById('aj-fecha').value});
-  save();const s=DB.socios.find(x=>x.id===ajSid);toast(`Ajuste de ${fmt(v)} aplicado a ${s?s.n:''}`);
+  DB.ajustes.push({id:nid('aj'),sid:ajSid,t:ajTipo,n:ajTipo==='pos'?v:-v,v:v,con:con,f:document.getElementById('aj-fecha').value});
+  save();var s=DB.socios.find(function(x){return x.id===ajSid;});toast('Ajuste de '+fmt(v)+' aplicado a '+(s?s.n:''));
   closeM('m-ajuste');if(curPage==='socios'||curPage==='libro')render(curPage);
 }
 
-// --- COBRO ---
 function openCobro(sid){
-  document.getElementById('cSel').innerHTML='<option value="">-- Seleccionar --</option>'+DB.socios.filter(s=>s.est==='activo').map(s=>`<option value="${s.id}">${s.n}</option>`).join('');
-  document.getElementById('cCuenta').innerHTML='<option value="">-- Seleccionar cuenta --</option>'+DB.cuentas.filter(c=>c.act).map(c=>`<option value="${c.id}">${CICONS[c.t]||'🏦'} ${c.n} (${fmt(getSCuenta(c.id))})</option>`).join('');
+  document.getElementById('cSel').innerHTML='<option value="">-- Seleccionar --</option>'+DB.socios.filter(function(s){return s.est==='activo';}).map(function(s){return'<option value="'+s.id+'">'+s.n+'</option>';}).join('');
+  document.getElementById('cCuenta').innerHTML='<option value="">-- Seleccionar cuenta --</option>'+DB.cuentas.filter(function(c){return c.act;}).map(function(c){return'<option value="'+c.id+'">'+(CICONS[c.t]||'🏦')+' '+c.n+' ('+fmt(getSCuenta(c.id))+')</option>';}).join('');
   document.getElementById('cTipo').value='cuota';cMP='efectivo';
-  document.querySelectorAll('#m-cobro .mb').forEach((b,i)=>b.classList.toggle('on',i===0));
+  document.querySelectorAll('#m-cobro .mb').forEach(function(b,i){b.classList.toggle('on',i===0);});
   document.getElementById('cCuentaW').style.display='none';document.getElementById('cCuotasW').style.display='none';
   document.getElementById('cCargoW').style.display='none';document.getElementById('cTotal').textContent='$0';
   document.getElementById('cConfirm').disabled=true;document.getElementById('caFecha').value=today();
   if(sid){document.getElementById('cSel').value=sid;onCSC();}
   openM('m-cobro');
 }
-function setMP(m,btn){cMP=m;document.querySelectorAll('#m-cobro .mb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('cCuentaW').style.display=m==='transferencia'?'':'none';}
+function setMP(m,btn){cMP=m;document.querySelectorAll('#m-cobro .mb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');document.getElementById('cCuentaW').style.display=m==='transferencia'?'':'none';}
 function onCSC(){onCTC();}
 function onCTC(){
-  const t=document.getElementById('cTipo').value;const sid=document.getElementById('cSel').value;
+  var t=document.getElementById('cTipo').value;var sid=document.getElementById('cSel').value;
   document.getElementById('cCuotasW').style.display=t==='cuota'&&sid?'':'none';
   document.getElementById('cCargoW').style.display=t==='cargo'?'':'none';
   document.getElementById('cTotal').textContent='$0';document.getElementById('cConfirm').disabled=true;
@@ -603,577 +563,443 @@ function onCTC(){
   if(t==='cargo'){document.getElementById('cConfirm').disabled=false;updCargoTotal();}
 }
 function loadCuotas(sid){
-  const pend=DB.cuotas.filter(c=>c.sid==sid&&c.est==='p').sort((a,b)=>a.a!==b.a?a.a-b.a:a.m-b.m);
-  const list=document.getElementById('cCuotasList');const empty=document.getElementById('cCuotasEmpty');
+  var pend=DB.cuotas.filter(function(c){return c.sid==sid&&c.est==='p';}).sort(function(a,b){return a.a!==b.a?a.a-b.a:a.m-b.m;});
+  var list=document.getElementById('cCuotasList');var empty=document.getElementById('cCuotasEmpty');
   if(!pend.length){list.innerHTML='';empty.style.display='';document.getElementById('cConfirm').disabled=true;return;}
   empty.style.display='none';
-  list.innerHTML=pend.map(c=>`<div class="qi" id="qi${c.id}">
-    <input type="checkbox" value="${c.id}" id="qc${c.id}" onchange="onQC(${c.id})" style="width:15px;height:15px;accent-color:var(--a);cursor:pointer;flex-shrink:0">
-    <div style="flex:1"><div style="font-size:13px;font-weight:600">${c.n} — ${MA(c.m,c.a)}</div>
-    <div style="display:flex;align-items:center;gap:5px;margin-top:4px"><span style="font-size:11px;color:var(--t2)">$</span><input type="number" class="qmi" id="qm${c.id}" value="${c.v}" oninput="updCuotaTotal()" onclick="event.stopPropagation()">
-    ${c.v!==DB.cfg.monto_cuota?`<span class="bk kw" style="font-size:10px">mod.</span>`:''}</div>
-    </div></div>`).join('');
+  list.innerHTML=pend.map(function(c){return'<div class="qi" id="qi'+c.id+'"><input type="checkbox" value="'+c.id+'" id="qc'+c.id+'" onchange="onQC('+c.id+')" style="width:15px;height:15px;accent-color:var(--a);cursor:pointer;flex-shrink:0"><div style="flex:1"><div style="font-size:13px;font-weight:600">'+c.n+' — '+MA(c.m,c.a)+'</div><div style="display:flex;align-items:center;gap:5px;margin-top:4px"><span style="font-size:11px;color:var(--t2)">$</span><input type="number" class="qmi" id="qm'+c.id+'" value="'+c.v+'" oninput="updCuotaTotal()" onclick="event.stopPropagation()">'+(c.v!==DB.cfg.monto_cuota?'<span class="bk kw" style="font-size:10px">mod.</span>':'')+'</div></div></div>';}).join('');
   updCuotaTotal();
 }
-function onQC(id){document.getElementById('qi'+id)?.classList.toggle('on',document.getElementById('qc'+id).checked);updCuotaTotal();}
+function onQC(id){document.getElementById('qi'+id)&&document.getElementById('qi'+id).classList.toggle('on',document.getElementById('qc'+id).checked);updCuotaTotal();}
 function updCuotaTotal(){
-  let t=0;document.querySelectorAll('#cCuotasList input[type="checkbox"]:checked').forEach(ch=>{const mi=document.getElementById('qm'+ch.value);t+=(mi?parseFloat(mi.value)||0:0);});
+  var t=0;document.querySelectorAll('#cCuotasList input[type="checkbox"]:checked').forEach(function(ch){var mi=document.getElementById('qm'+ch.value);t+=(mi?parseFloat(mi.value)||0:0);});
   document.getElementById('cTotal').textContent=fmt(t);
   document.getElementById('cConfirm').disabled=document.querySelectorAll('#cCuotasList input[type="checkbox"]:checked').length===0;
 }
 function updCargoTotal(){document.getElementById('cTotal').textContent=fmt(parseFloat(document.getElementById('caMonto').value)||0);}
 function confirmCobro(){
-  const sid=parseInt(document.getElementById('cSel').value);const t=document.getElementById('cTipo').value;
-  const mp=cMP;const cid=mp==='transferencia'?parseInt(document.getElementById('cCuenta').value)||null:null;
+  var sid=parseInt(document.getElementById('cSel').value);var t=document.getElementById('cTipo').value;
+  var mp=cMP;var cid=mp==='transferencia'?parseInt(document.getElementById('cCuenta').value)||null:null;
   if(!sid){toast('Seleccioná un socio','e');return;}
-  const socio=DB.socios.find(s=>s.id===sid);const hoy=today();
+  var socio=DB.socios.find(function(s){return s.id===sid;});var hoy=today();
   if(t==='cuota'){
-    const checks=document.querySelectorAll('#cCuotasList input[type="checkbox"]:checked');if(!checks.length)return;
-    let n=0;checks.forEach(ch=>{
-      const c=DB.cuotas.find(x=>x.id==ch.value);if(!c)return;
-      const mv=parseFloat(document.getElementById('qm'+ch.value)?.value)||c.v;
+    var checks=document.querySelectorAll('#cCuotasList input[type="checkbox"]:checked');if(!checks.length)return;
+    var n=0;checks.forEach(function(ch){
+      var c=DB.cuotas.find(function(x){return x.id==ch.value;});if(!c)return;
+      var mv=parseFloat(document.getElementById('qm'+ch.value)&&document.getElementById('qm'+ch.value).value)||c.v;
       c.est='co';c.fp=hoy;c.v=mv;
-      const co={id:nid('co'),sid,t:'cuota',n:`${c.n} ${MA(c.m,c.a)}`,v:mv,f:hoy,mp,cid,qid:c.id};
+      var co={id:nid('co'),sid:sid,t:'cuota',n:c.n+' '+MA(c.m,c.a),v:mv,f:hoy,mp:mp,cid:cid,qid:c.id};
       DB.cobros.push(co);
-      if(mp==='transferencia'&&cid)DB.movs.push({id:nid('mv'),cid,f:hoy,con:`Cobro cuota ${MA(c.m,c.a)} — ${socio.n}`,t:'cobro',n:mv,coid:co.id});
+      if(mp==='transferencia'&&cid)DB.movs.push({id:nid('mv'),cid:cid,f:hoy,con:'Cobro cuota '+MA(c.m,c.a)+' — '+socio.n,t:'cobro',n:mv,coid:co.id});
       n++;
     });
-    toast(`${n} cuota${n!==1?'s':''} cobradas (${mp})`);
+    toast(n+' cuota'+(n!==1?'s':'')+' cobradas ('+mp+')');
   }else{
-    const nombre=document.getElementById('caName').value.trim();const v=parseFloat(document.getElementById('caMonto').value);
+    var nombre=document.getElementById('caName').value.trim();var v=parseFloat(document.getElementById('caMonto').value);
     if(!nombre||!v){toast('Completá nombre y monto','e');return;}
-    const co={id:nid('co'),sid,t:'cargo',n:nombre,v,f:document.getElementById('caFecha').value||hoy,mp,cid,nota:document.getElementById('caNota').value};
+    var co={id:nid('co'),sid:sid,t:'cargo',n:nombre,v:v,f:document.getElementById('caFecha').value||hoy,mp:mp,cid:cid,nota:document.getElementById('caNota').value};
     DB.cobros.push(co);
-    if(mp==='transferencia'&&cid)DB.movs.push({id:nid('mv'),cid,f:co.f,con:`Cobro: ${nombre} — ${socio.n}`,t:'cobro',n:v,coid:co.id});
-    toast(`Cargo "${nombre}" registrado`);
+    if(mp==='transferencia'&&cid)DB.movs.push({id:nid('mv'),cid:cid,f:co.f,con:'Cobro: '+nombre+' — '+socio.n,t:'cobro',n:v,coid:co.id});
+    toast('Cargo "'+nombre+'" registrado');
   }
   save();closeM('m-cobro');if(curPage!=='dashboard')render(curPage);
 }
 
-// --- PAGINA COBRO ---
 function rCobro(){
-  const pend=DB.socios.filter(s=>s.est==='activo'&&getMorosos(s.id)>0).sort((a,b)=>getMorosos(b.id)-getMorosos(a.id));
-  return`<div class="hero"><h2>💳 Registrar Cobro</h2><p>Cuotas o cargos · Monto editable al cobrar · Efectivo o transferencia</p>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <button class="btn bg_ bl" onclick="openCobro()">📅 Cobrar Cuotas</button>
-      <button class="btn bpu bl" onclick="openCobroCargo()">➕ Cargo Personalizado</button>
-    </div></div>
-  <div class="card"><div class="ctit">Socios con cuotas pendientes</div><div style="margin-top:8px">
-    ${!pend.length?`<div class="es" style="padding:20px">🎉<div>¡Todos al día!</div></div>`:
-      pend.map(s=>{const d=getMorosos(s.id);const col=d>=3?'var(--r)':d===2?'var(--o)':'var(--y)';
-      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)">
-        <div><strong>${s.n}</strong><div style="font-size:11px;color:var(--t2)">${fmt(d*DB.cfg.monto_cuota)} est. pendiente</div></div>
-        <div style="display:flex;gap:7px;align-items:center"><span style="color:${col};font-size:12px;font-weight:600">${d} mes${d!==1?'es':''}</span>
-        <button class="btn bg_ bs" onclick="openCobro(${s.id})">Cobrar</button></div></div>`;}).join('')}
-  </div></div>`;
+  var pend=DB.socios.filter(function(s){return s.est==='activo'&&getMorosos(s.id)>0;}).sort(function(a,b){return getMorosos(b.id)-getMorosos(a.id);});
+  return'<div class="hero"><h2>💳 Registrar Cobro</h2><p>Cuotas o cargos · Monto editable al cobrar</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn bg_ bl" onclick="openCobro()">📅 Cobrar Cuotas</button><button class="btn bpu bl" onclick="openCobroCargo()">➕ Cargo Personalizado</button></div></div>'+
+  '<div class="card"><div class="ctit">Socios con cuotas pendientes</div><div style="margin-top:8px">'+
+  (!pend.length?'<div class="es" style="padding:20px">🎉<div>¡Todos al día!</div></div>':
+    pend.map(function(s){var d=getMorosos(s.id);var col=d>=3?'var(--r)':d===2?'var(--o)':'var(--y)';
+    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)"><div><strong>'+s.n+'</strong><div style="font-size:11px;color:var(--t2)">'+fmt(d*DB.cfg.monto_cuota)+' est. pendiente</div></div><div style="display:flex;gap:7px;align-items:center"><span style="color:'+col+';font-size:12px;font-weight:600">'+d+' mes'+(d!==1?'es':'')+'</span><button class="btn bg_ bs" onclick="openCobro('+s.id+')">Cobrar</button></div></div>';}).join(''))+
+  '</div></div>';
 }
-function openCobroCargo(){openCobro();setTimeout(()=>{document.getElementById('cTipo').value='cargo';onCTC();},100);}
+function openCobroCargo(){openCobro();setTimeout(function(){document.getElementById('cTipo').value='cargo';onCTC();},100);}
 
-// --- HISTORIAL ---
 function rHistorial(){
   if(CU.role==='socio'){
-    const s=DB.socios.find(x=>x.id===CU.sid);
-    const cobros=DB.cobros.filter(c=>c.sid===CU.sid).sort((a,b)=>b.f.localeCompare(a.f));
-    const{co,de,s:sal}=getSaldoSocio(CU.sid);const d=getMorosos(CU.sid);
-    return`<div class="g3" style="margin-bottom:14px">
-      <div class="sc cg"><div class="sl">Cobrado</div><div class="sv vg">${fmt(co)}</div></div>
-      <div class="sc cr"><div class="sl">Deuda</div><div class="sv vr">${fmt(de)}</div></div>
-      <div class="sc ${sal>=0?'cg':'cr'}"><div class="sl">Saldo</div><div class="sv ${sal>=0?'vg':'vr'}">${fmt(sal)}</div></div>
-    </div>
-    <div class="card" style="margin-bottom:12px"><strong>${s?s.n:''}</strong><div style="margin-top:6px">${d===0?`<span class="bk kg">✅ Al día</span>`:`<span class="bk kr">⚠️ ${d} mes${d!==1?'es':''} de deuda</span>`}</div></div>
-    <div class="tw">${tblCobros(cobros,false)}</div>`;
+    var s=DB.socios.find(function(x){return x.id===CU.sid;});
+    var cobros=DB.cobros.filter(function(c){return c.sid===CU.sid;}).sort(function(a,b){return b.f.localeCompare(a.f);});
+    var ss=getSaldoSocio(CU.sid);var d=getMorosos(CU.sid);
+    return'<div class="g3" style="margin-bottom:14px"><div class="sc cg"><div class="sl">Cobrado</div><div class="sv vg">'+fmt(ss.co)+'</div></div><div class="sc cr"><div class="sl">Deuda</div><div class="sv vr">'+fmt(ss.de)+'</div></div><div class="sc '+(ss.s>=0?'cg':'cr')+'"><div class="sl">Saldo</div><div class="sv '+(ss.s>=0?'vg':'vr')+'">'+fmt(ss.s)+'</div></div></div>'+
+    '<div class="card" style="margin-bottom:12px"><strong>'+(s?s.n:'')+'</strong><div style="margin-top:6px">'+(d===0?'<span class="bk kg">✅ Al día</span>':'<span class="bk kr">⚠️ '+d+' mes'+(d!==1?'es':'')+' de deuda</span>')+'</div></div>'+
+    '<div class="tw">'+tblCobros(cobros,false)+'</div>';
   }
-  return`<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
-    <select onchange="render('historial')" id="hf-s" style="width:auto;min-width:160px"><option value="">Todos los socios</option>${DB.socios.map(s=>`<option value="${s.id}">${s.n}</option>`).join('')}</select>
-    <select onchange="render('historial')" id="hf-t" style="width:auto"><option value="">Todos</option><option value="cuota">Cuotas</option><option value="cargo">Cargos</option></select>
-    <select onchange="render('historial')" id="hf-m" style="width:auto"><option value="">Todos los métodos</option><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select>
-  </div><div class="tw">${tblCobros([...DB.cobros].sort((a,b)=>b.f.localeCompare(a.f)),true)}</div>`;
+  return'<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">'+
+  '<select onchange="render(\'historial\')" id="hf-s" style="width:auto;min-width:160px"><option value="">Todos los socios</option>'+DB.socios.map(function(s){return'<option value="'+s.id+'">'+s.n+'</option>';}).join('')+'</select>'+
+  '<select onchange="render(\'historial\')" id="hf-t" style="width:auto"><option value="">Todos</option><option value="cuota">Cuotas</option><option value="cargo">Cargos</option></select>'+
+  '<select onchange="render(\'historial\')" id="hf-m" style="width:auto"><option value="">Todos los métodos</option><option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option></select>'+
+  '</div><div class="tw">'+tblCobros([].concat(DB.cobros).sort(function(a,b){return b.f.localeCompare(a.f);}),true)+'</div>';
 }
 function tblCobros(list,showS){
-  const sf=document.getElementById('hf-s');const tf=document.getElementById('hf-t');const mf=document.getElementById('hf-m');
-  let f=list;if(sf?.value)f=f.filter(c=>c.sid==sf.value);if(tf?.value)f=f.filter(c=>c.t===tf.value);if(mf?.value)f=f.filter(c=>c.mp===mf.value);
-  const mb=m=>m==='transferencia'?`<span class="bk kt">🏦</span>`:`<span class="bk kx">💵</span>`;
-  return`<table><thead><tr>${showS?'<th>Socio</th>':''}<th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Método</th><th>Monto</th></tr></thead><tbody>
-  ${!f.length?`<tr><td colspan="6"><div class="es">📋<div>Sin registros</div></div></td></tr>`:
-    f.map(c=>{const s=DB.socios.find(x=>x.id===c.sid);return`<tr>${showS?`<td>${s?s.n:'—'}</td>`:''}<td style="font-size:12px;color:var(--t2)">${c.f}</td><td><strong>${c.n}</strong></td><td><span class="bk ${c.t==='cuota'?'kb':'kp'}">${c.t==='cuota'?'📅':'➕'}</span></td><td>${mb(c.mp)}</td><td style="font-family:'DM Mono';color:var(--g)">${fmt(c.v)}</td></tr>`;}).join('')}
-  </tbody></table>`;
+  var sf=document.getElementById('hf-s');var tf=document.getElementById('hf-t');var mf=document.getElementById('hf-m');
+  var f=list;if(sf&&sf.value)f=f.filter(function(c){return c.sid==sf.value;});if(tf&&tf.value)f=f.filter(function(c){return c.t===tf.value;});if(mf&&mf.value)f=f.filter(function(c){return c.mp===mf.value;});
+  var mb=function(m){return m==='transferencia'?'<span class="bk kt">🏦</span>':'<span class="bk kx">💵</span>';};
+  return'<table><thead><tr>'+(showS?'<th>Socio</th>':'')+'<th>Fecha</th><th>Concepto</th><th>Tipo</th><th>Método</th><th>Monto</th></tr></thead><tbody>'+
+  (!f.length?'<tr><td colspan="6"><div class="es">📋<div>Sin registros</div></div></td></tr>':
+    f.map(function(c){var s=DB.socios.find(function(x){return x.id===c.sid;});return'<tr>'+(showS?'<td>'+(s?s.n:'—')+'</td>':'')+'<td style="font-size:12px;color:var(--t2)">'+c.f+'</td><td><strong>'+c.n+'</strong></td><td><span class="bk '+(c.t==='cuota'?'kb':'kp')+'">'+(c.t==='cuota'?'📅':'➕')+'</span></td><td>'+mb(c.mp)+'</td><td style="font-family:\'DM Mono\';color:var(--g)">'+fmt(c.v)+'</td></tr>';}).join(''))+
+  '</tbody></table>';
 }
 
-// --- MOROSOS ---
 function rMorosos(){
-  const sa=DB.socios.filter(x=>x.est==='activo');
-  const alD=sa.filter(x=>getMorosos(x.id)===0);
-  const m1=sa.filter(x=>getMorosos(x.id)===1);const m2=sa.filter(x=>getMorosos(x.id)===2);const m3=sa.filter(x=>getMorosos(x.id)>=3);
-  const sec=(tit,lst,col,tot)=>{if(!lst.length)return'';return`<div style="margin-bottom:18px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:9px;height:9px;border-radius:50%;background:${col}"></div><strong style="font-size:14px">${tit}</strong><span style="font-size:12px;color:var(--t2);margin-left:auto">${lst.length} socios${tot?` · ${fmt(tot)}`:''}</span></div>
-    <div class="tw"><table><thead><tr><th>Socio</th><th>Meses</th><th>Deuda est.</th><th>Acc.</th></tr></thead><tbody>${lst.map(x=>{const d=getMorosos(x.id);return`<tr><td><strong>${x.n}</strong></td><td>${d}</td><td style="font-family:'DM Mono';color:var(--r)">${fmt(d*DB.cfg.monto_cuota)}</td><td><div style="display:flex;gap:4px"><button class="btn bg_ bs" onclick="openCobro(${x.id})">Cobrar</button><button class="btn bwy bs" onclick="openAjuste(${x.id})">⚖️</button></div></td></tr>`;}).join('')}</tbody></table></div></div>`;};
-  return`<div class="g4" style="margin-bottom:16px">
-    <div class="sc cg"><div class="sl">Al día</div><div class="sv vg">${alD.length}</div></div>
-    <div class="sc cy"><div class="sl">1 mes</div><div class="sv vy">${m1.length}</div></div>
-    <div class="sc cr"><div class="sl">2 meses</div><div class="sv" style="color:var(--o)">${m2.length}</div></div>
-    <div class="sc cr"><div class="sl">3+ meses</div><div class="sv vr">${m3.length}</div></div>
-  </div>
-  ${sec('⚡ 1 mes',m1,'var(--y)',m1.reduce((a,x)=>a+getMorosos(x.id)*DB.cfg.monto_cuota,0))}
-  ${sec('⚠️ 2 meses',m2,'var(--o)',m2.reduce((a,x)=>a+getMorosos(x.id)*DB.cfg.monto_cuota,0))}
-  ${sec('🚨 3+ meses',m3,'var(--r)',m3.reduce((a,x)=>a+getMorosos(x.id)*DB.cfg.monto_cuota,0))}
-  ${!m1.length&&!m2.length&&!m3.length?`<div class="es">🎉<div>¡Sin morosos!</div></div>`:''}`;
+  var sa=DB.socios.filter(function(x){return x.est==='activo';});
+  var alD=sa.filter(function(x){return getMorosos(x.id)===0;});
+  var m1=sa.filter(function(x){return getMorosos(x.id)===1;});
+  var m2=sa.filter(function(x){return getMorosos(x.id)===2;});
+  var m3=sa.filter(function(x){return getMorosos(x.id)>=3;});
+  var sec=function(tit,lst,col,tot){
+    if(!lst.length)return'';
+    return'<div style="margin-bottom:18px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:9px;height:9px;border-radius:50%;background:'+col+'"></div><strong style="font-size:14px">'+tit+'</strong><span style="font-size:12px;color:var(--t2);margin-left:auto">'+lst.length+' socios'+(tot?' · '+fmt(tot):'')+'</span></div>'+
+    '<div class="tw"><table><thead><tr><th>Socio</th><th>Meses</th><th>Deuda est.</th><th>Acc.</th></tr></thead><tbody>'+
+    lst.map(function(x){var d=getMorosos(x.id);return'<tr><td><strong>'+x.n+'</strong></td><td>'+d+'</td><td style="font-family:\'DM Mono\';color:var(--r)">'+fmt(d*DB.cfg.monto_cuota)+'</td><td><div style="display:flex;gap:4px"><button class="btn bg_ bs" onclick="openCobro('+x.id+')">Cobrar</button><button class="btn bwy bs" onclick="openAjuste('+x.id+')">⚖️</button></div></td></tr>';}).join('')+
+    '</tbody></table></div></div>';
+  };
+  return'<div class="g4" style="margin-bottom:16px"><div class="sc cg"><div class="sl">Al día</div><div class="sv vg">'+alD.length+'</div></div><div class="sc cy"><div class="sl">1 mes</div><div class="sv vy">'+m1.length+'</div></div><div class="sc cr"><div class="sl">2 meses</div><div class="sv" style="color:var(--o)">'+m2.length+'</div></div><div class="sc cr"><div class="sl">3+ meses</div><div class="sv vr">'+m3.length+'</div></div></div>'+
+  sec('⚡ 1 mes',m1,'var(--y)',m1.reduce(function(a,x){return a+getMorosos(x.id)*DB.cfg.monto_cuota;},0))+
+  sec('⚠️ 2 meses',m2,'var(--o)',m2.reduce(function(a,x){return a+getMorosos(x.id)*DB.cfg.monto_cuota;},0))+
+  sec('🚨 3+ meses',m3,'var(--r)',m3.reduce(function(a,x){return a+getMorosos(x.id)*DB.cfg.monto_cuota;},0))+
+  (!m1.length&&!m2.length&&!m3.length?'<div class="es">🎉<div>¡Sin morosos!</div></div>':'');
 }
 
-// --- GASTOS ---
 function rGastos(){
-  document.getElementById('pactions').innerHTML=`<button class="btn bp bs" onclick="openGasto()">+ Registrar</button>`;
-  const tot=DB.gastos.reduce((a,g)=>a+g.v,0);
-  const lst=[...DB.gastos].sort((a,b)=>b.f.localeCompare(a.f));
-  return`<div class="sc cr" style="margin-bottom:14px"><div class="sl">Total Gastos</div><div class="sv vr">${fmt(tot)}</div></div>
-  <div class="tw"><table><thead><tr><th>Fecha</th><th>Cat.</th><th>Concepto</th><th>Cuenta</th><th>Monto</th><th>Acc.</th></tr></thead><tbody>
-  ${!lst.length?`<tr><td colspan="6"><div class="es">🧾<div>Sin gastos</div></div></td></tr>`:
-    lst.map(g=>{const c=g.cid?DB.cuentas.find(x=>x.id===g.cid):null;return`<tr><td style="font-size:12px;color:var(--t2)">${g.f}</td><td><span class="bk kx">${CATICONS[g.cat]||'📦'}</span></td><td>${g.con}</td><td style="font-size:12px;color:var(--tl)">${c?`${CICONS[c.t]||'🏦'} ${c.n}`:'—'}</td><td style="font-family:'DM Mono';color:var(--r)">${fmt(g.v)}</td><td><div style="display:flex;gap:4px"><button class="btn bgh bs" onclick="openGasto(${g.id})">✏️</button><button class="btn bdr bs" onclick="delGasto(${g.id})">🗑️</button></div></td></tr>`;}).join('')}
-  </tbody></table></div>`;
+  document.getElementById('pactions').innerHTML='<button class="btn bp bs" onclick="openGasto()">+ Registrar</button>';
+  var tot=DB.gastos.reduce(function(a,g){return a+g.v;},0);
+  var lst=[].concat(DB.gastos).sort(function(a,b){return b.f.localeCompare(a.f);});
+  return'<div class="sc cr" style="margin-bottom:14px"><div class="sl">Total Gastos</div><div class="sv vr">'+fmt(tot)+'</div></div>'+
+  '<div class="tw"><table><thead><tr><th>Fecha</th><th>Cat.</th><th>Concepto</th><th>Cuenta</th><th>Monto</th><th>Acc.</th></tr></thead><tbody>'+
+  (!lst.length?'<tr><td colspan="6"><div class="es">🧾<div>Sin gastos</div></div></td></tr>':
+    lst.map(function(g){var c=g.cid?DB.cuentas.find(function(x){return x.id===g.cid;}):null;return'<tr><td style="font-size:12px;color:var(--t2)">'+g.f+'</td><td><span class="bk kx">'+(CATICONS[g.cat]||'📦')+'</span></td><td>'+g.con+'</td><td style="font-size:12px;color:var(--tl)">'+(c?(CICONS[c.t]||'🏦')+' '+c.n:'—')+'</td><td style="font-family:\'DM Mono\';color:var(--r)">'+fmt(g.v)+'</td><td><div style="display:flex;gap:4px"><button class="btn bgh bs" onclick="openGasto('+g.id+')">✏️</button><button class="btn bdr bs" onclick="delGasto('+g.id+')">🗑️</button></div></td></tr>';}).join(''))+
+  '</tbody></table></div>';
 }
 function openGasto(id){
   editGId=id||null;document.getElementById('mg-tit').textContent=id?'Editar Gasto':'Registrar Gasto';
-  const g=id?DB.gastos.find(x=>x.id===id):null;
-  document.getElementById('gcuenta').innerHTML='<option value="">No afectar cuenta</option>'+DB.cuentas.filter(c=>c.act).map(c=>`<option value="${c.id}">${CICONS[c.t]||'🏦'} ${c.n}</option>`).join('');
+  var g=id?DB.gastos.find(function(x){return x.id===id;}):null;
+  document.getElementById('gcuenta').innerHTML='<option value="">No afectar cuenta</option>'+DB.cuentas.filter(function(c){return c.act;}).map(function(c){return'<option value="'+c.id+'">'+(CICONS[c.t]||'🏦')+' '+c.n+'</option>';}).join('');
   document.getElementById('gf').value=g?g.f:today();document.getElementById('gcat').value=g?g.cat:'comida';
   document.getElementById('gcon').value=g?g.con:'';document.getElementById('gmonto').value=g?g.v:'';
-  document.getElementById('gcuenta').value=g?.cid||'';
-  openM('m-gasto');
+  document.getElementById('gcuenta').value=g&&g.cid?g.cid:'';openM('m-gasto');
 }
 function saveGasto(){
-  const v=parseFloat(document.getElementById('gmonto').value);const con=document.getElementById('gcon').value.trim();
-  const cid=document.getElementById('gcuenta').value?parseInt(document.getElementById('gcuenta').value):null;
+  var v=parseFloat(document.getElementById('gmonto').value);var con=document.getElementById('gcon').value.trim();
+  var cid=document.getElementById('gcuenta').value?parseInt(document.getElementById('gcuenta').value):null;
   if(!con||!v){toast('Completá todos los campos','e');return;}
-  const gd={f:document.getElementById('gf').value,cat:document.getElementById('gcat').value,con,v,cid};
-  if(editGId){DB.movs=DB.movs.filter(m=>m.gid!==editGId);Object.assign(DB.gastos.find(x=>x.id===editGId),gd);if(cid)DB.movs.push({id:nid('mv'),cid,f:gd.f,con:`Gasto: ${con}`,t:'gasto',n:-v,gid:editGId});}
-  else{const g={id:nid('g'),...gd};DB.gastos.push(g);if(cid)DB.movs.push({id:nid('mv'),cid,f:gd.f,con:`Gasto: ${con}`,t:'gasto',n:-v,gid:g.id});}
+  var gd={f:document.getElementById('gf').value,cat:document.getElementById('gcat').value,con:con,v:v,cid:cid};
+  if(editGId){DB.movs=DB.movs.filter(function(m){return m.gid!==editGId;});Object.assign(DB.gastos.find(function(x){return x.id===editGId;}),gd);if(cid)DB.movs.push({id:nid('mv'),cid:cid,f:gd.f,con:'Gasto: '+con,t:'gasto',n:-v,gid:editGId});}
+  else{var g={id:nid('g')};Object.assign(g,gd);DB.gastos.push(g);if(cid)DB.movs.push({id:nid('mv'),cid:cid,f:gd.f,con:'Gasto: '+con,t:'gasto',n:-v,gid:g.id});}
   save();closeM('m-gasto');toast(editGId?'Gasto actualizado':'Gasto registrado');render('gastos');
 }
-function delGasto(id){if(!confirm('¿Eliminar este gasto?'))return;DB.gastos=DB.gastos.filter(g=>g.id!==id);DB.movs=DB.movs.filter(m=>m.gid!==id);save();toast('Eliminado');render('gastos');}
+function delGasto(id){if(!confirm('¿Eliminar este gasto?'))return;DB.gastos=DB.gastos.filter(function(g){return g.id!==id;});DB.movs=DB.movs.filter(function(m){return m.gid!==id;});save();toast('Eliminado');render('gastos');}
 
-// --- CUENTAS ---
 function rCuentas(){
-  document.getElementById('pactions').innerHTML=`<button class="btn bp bs" onclick="openMCuenta()">+ Cuenta</button><button class="btn bgh bs" onclick="openMMov()">+ Movimiento</button>`;
-  const movlist=[...DB.movs].filter(m=>!filtMov||m.cid===filtMov).sort((a,b)=>b.f.localeCompare(a.f));
-  const MLAB={deposito:'Depósito',extraccion:'Extracción',trans_cuentas:'Transf. cuentas',trans_tercero:'Transf. tercero',cobro:'Cobro trans.',gasto:'Débito gasto'};
-  const MCOL={deposito:'kg',extraccion:'kr',trans_cuentas:'kp',trans_tercero:'kr',cobro:'kb',gasto:'ko'};
-  return`<div class="sc ct" style="margin-bottom:14px"><div class="sl">Total en Cuentas</div><div class="sv vt">${fmt(getTotCuentas())}</div><div style="font-size:11px;color:var(--t2);margin-top:2px">${DB.cuentas.filter(c=>c.act).length} cuentas activas</div></div>
-  <div class="g3" style="margin-bottom:18px">
-    ${!DB.cuentas.length?`<div style="grid-column:1/-1"><div class="es">🏦<div>Sin cuentas</div></div></div>`:
-      DB.cuentas.map(c=>{const sal=getSCuenta(c.id);return`<div class="ccrd ${c.t}">
-        <div style="font-size:24px;margin-bottom:5px">${CICONS[c.t]||'🏦'}</div>
-        <div style="font-size:13px;font-weight:700">${c.n}</div>
-        <div style="font-size:11px;color:var(--t2)">${({banco:'Cuenta Bancaria',caja:'Caja/Efectivo',ahorro:'Caja de Ahorro',corriente:'Cta. Corriente'})[c.t]||c.t}</div>
-        <div style="font-size:20px;font-weight:700;font-family:'DM Mono';color:${sal>=0?'var(--tl)':'var(--r)'};margin:8px 0">${fmt(sal)}</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          <button class="btn bgh bs" onclick="filtMov=filtMov===${c.id}?null:${c.id};render('cuentas')">${filtMov===c.id?'✕ Filtro':'📋 Movs'}</button>
-          <button class="btn bgh bs" onclick="openMMov(${c.id})">+ Mov</button>
-          <button class="btn bgh bs" onclick="openMCuenta(${c.id})">✏️</button>
-        </div></div>`;}).join('')}
-  </div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="ctit" style="margin:0">Movimientos${filtMov?` — ${DB.cuentas.find(c=>c.id===filtMov)?.n}`:''}</div>
-      ${filtMov?`<button class="btn bgh bs" onclick="filtMov=null;render('cuentas')">✕ Quitar</button>`:''}
-    </div>
-    <div class="tw"><table><thead><tr><th>Fecha</th><th>Cuenta</th><th>Tipo</th><th>Concepto</th><th>Importe</th></tr></thead><tbody>
-    ${!movlist.length?`<tr><td colspan="5"><div class="es">📋<div>Sin movimientos</div></div></td></tr>`:
-      movlist.map(m=>{const c=DB.cuentas.find(x=>x.id===m.cid);return`<tr><td style="font-size:11px;color:var(--t2)">${m.f}</td><td style="font-size:12px">${c?`${CICONS[c.t]||'🏦'} ${c.n}`:'—'}</td><td><span class="bk ${MCOL[m.t]||'kx'}">${MLAB[m.t]||m.t}</span></td><td style="font-size:12px">${m.con}</td><td style="font-family:'DM Mono';font-weight:700;color:${m.n>=0?'var(--g)':'var(--r)'}">${m.n>=0?'+':''}${fmt(m.n)}</td></tr>`;}).join('')}
-    </tbody></table></div>
-  </div>`;
+  document.getElementById('pactions').innerHTML='<button class="btn bp bs" onclick="openMCuenta()">+ Cuenta</button><button class="btn bgh bs" onclick="openMMov()">+ Movimiento</button>';
+  var movlist=[].concat(DB.movs).filter(function(m){return!filtMov||m.cid===filtMov;}).sort(function(a,b){return b.f.localeCompare(a.f);});
+  var MLAB={deposito:'Depósito',extraccion:'Extracción',trans_cuentas:'Transf.',trans_tercero:'Transf. tercero',cobro:'Cobro',gasto:'Gasto'};
+  var MCOL={deposito:'kg',extraccion:'kr',trans_cuentas:'kp',trans_tercero:'kr',cobro:'kb',gasto:'ko'};
+  return'<div class="sc ct" style="margin-bottom:14px"><div class="sl">Total en Cuentas</div><div class="sv vt">'+fmt(getTotCuentas())+'</div></div>'+
+  '<div class="g3" style="margin-bottom:18px">'+
+  (!DB.cuentas.length?'<div style="grid-column:1/-1"><div class="es">🏦<div>Sin cuentas</div></div></div>':
+    DB.cuentas.map(function(c){var sal=getSCuenta(c.id);return'<div class="ccrd '+c.t+'"><div style="font-size:24px;margin-bottom:5px">'+(CICONS[c.t]||'🏦')+'</div><div style="font-size:13px;font-weight:700">'+c.n+'</div><div style="font-size:11px;color:var(--t2)">'+({banco:'Cuenta Bancaria',caja:'Caja/Efectivo',ahorro:'Caja de Ahorro',corriente:'Cta. Corriente'})[c.t]+'</div><div style="font-size:20px;font-weight:700;font-family:\'DM Mono\';color:'+(sal>=0?'var(--tl)':'var(--r)')+';margin:8px 0">'+fmt(sal)+'</div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn bgh bs" onclick="filtMov=filtMov==='+c.id+'?null:'+c.id+';render(\'cuentas\')">'+(filtMov===c.id?'✕ Filtro':'📋 Movs')+'</button><button class="btn bgh bs" onclick="openMMov('+c.id+')">+ Mov</button><button class="btn bgh bs" onclick="openMCuenta('+c.id+')">✏️</button></div></div>';}).join(''))+
+  '</div>'+
+  '<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div class="ctit" style="margin:0">Movimientos'+(filtMov?' — '+(DB.cuentas.find(function(c){return c.id===filtMov;})||{}).n:'')+'</div>'+(filtMov?'<button class="btn bgh bs" onclick="filtMov=null;render(\'cuentas\')">✕ Quitar</button>':'')+'</div>'+
+  '<div class="tw"><table><thead><tr><th>Fecha</th><th>Cuenta</th><th>Tipo</th><th>Concepto</th><th>Importe</th></tr></thead><tbody>'+
+  (!movlist.length?'<tr><td colspan="5"><div class="es">📋<div>Sin movimientos</div></div></td></tr>':
+    movlist.map(function(m){var c=DB.cuentas.find(function(x){return x.id===m.cid;});return'<tr><td style="font-size:11px;color:var(--t2)">'+m.f+'</td><td style="font-size:12px">'+(c?(CICONS[c.t]||'🏦')+' '+c.n:'—')+'</td><td><span class="bk '+(MCOL[m.t]||'kx')+'">'+(MLAB[m.t]||m.t)+'</span></td><td style="font-size:12px">'+m.con+'</td><td style="font-family:\'DM Mono\';font-weight:700;color:'+(m.n>=0?'var(--g)':'var(--r)')+'">'+(m.n>=0?'+':'')+fmt(m.n)+'</td></tr>';}).join(''))+
+  '</tbody></table></div></div>';
 }
 function openMCuenta(id){
   editCuId=id||null;document.getElementById('mc-tit').textContent=id?'Editar Cuenta':'Nueva Cuenta';
-  const c=id?DB.cuentas.find(x=>x.id===id):null;
+  var c=id?DB.cuentas.find(function(x){return x.id===id;}):null;
   document.getElementById('cbn').value=c?c.n:'';document.getElementById('cbt').value=c?c.t:'banco';
-  document.getElementById('cbs').value=c?c.si:0;document.getElementById('cbd').value=c?c.d:'';
-  openM('m-cuenta');
+  document.getElementById('cbs').value=c?c.si:0;document.getElementById('cbd').value=c?c.d:'';openM('m-cuenta');
 }
 function saveCuenta(){
-  const n=document.getElementById('cbn').value.trim();if(!n){toast('Ingresá el nombre','e');return;}
-  const d={n,t:document.getElementById('cbt').value,si:parseFloat(document.getElementById('cbs').value)||0,d:document.getElementById('cbd').value,act:true};
-  if(editCuId){Object.assign(DB.cuentas.find(x=>x.id===editCuId),d);}else{DB.cuentas.push({id:nid('cu'),...d});}
+  var n=document.getElementById('cbn').value.trim();if(!n){toast('Ingresá el nombre','e');return;}
+  var d={n:n,t:document.getElementById('cbt').value,si:parseFloat(document.getElementById('cbs').value)||0,d:document.getElementById('cbd').value,act:true};
+  if(editCuId){Object.assign(DB.cuentas.find(function(x){return x.id===editCuId;}),d);}else{var c={id:nid('cu')};Object.assign(c,d);DB.cuentas.push(c);}
   save();closeM('m-cuenta');toast(editCuId?'Cuenta actualizada':'Cuenta creada');render('cuentas');
 }
 function openMMov(cid){
-  const opts='<option value="">-- Seleccionar --</option>'+DB.cuentas.filter(c=>c.act).map(c=>`<option value="${c.id}">${CICONS[c.t]||'🏦'} ${c.n} (${fmt(getSCuenta(c.id))})</option>`).join('');
+  var opts='<option value="">-- Seleccionar --</option>'+DB.cuentas.filter(function(c){return c.act;}).map(function(c){return'<option value="'+c.id+'">'+(CICONS[c.t]||'🏦')+' '+c.n+' ('+fmt(getSCuenta(c.id))+')</option>';}).join('');
   document.getElementById('mc').innerHTML=opts;document.getElementById('mcd').innerHTML=opts;
-  document.getElementById('mt').value='deposito';document.getElementById('m-dest-w').style.display='none';
-  document.getElementById('ml').textContent='Cuenta';
-  ['mm','mcon','mref'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('mf').value=today();if(cid)document.getElementById('mc').value=cid;
-  openM('m-mov');
+  document.getElementById('mt').value='deposito';document.getElementById('m-dest-w').style.display='none';document.getElementById('ml').textContent='Cuenta';
+  ['mm','mcon','mref'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('mf').value=today();if(cid)document.getElementById('mc').value=cid;openM('m-mov');
 }
 function onMTC(){
-  const t=document.getElementById('mt').value;
-  document.getElementById('m-dest-w').style.display=t==='trans_cuentas'?'':'none';
-  const labs={deposito:'Cuenta receptora',extraccion:'Cuenta de origen',trans_cuentas:'Cuenta de origen',trans_tercero:'Cuenta de origen'};
+  var t=document.getElementById('mt').value;document.getElementById('m-dest-w').style.display=t==='trans_cuentas'?'':'none';
+  var labs={deposito:'Cuenta receptora',extraccion:'Cuenta de origen',trans_cuentas:'Cuenta de origen',trans_tercero:'Cuenta de origen'};
   document.getElementById('ml').textContent=labs[t]||'Cuenta';
 }
 function confirmMov(){
-  const t=document.getElementById('mt').value;const cid=parseInt(document.getElementById('mc').value);
-  const v=parseFloat(document.getElementById('mm').value);const f=document.getElementById('mf').value;
-  const con=document.getElementById('mcon').value.trim();const ref=document.getElementById('mref').value;
+  var t=document.getElementById('mt').value;var cid=parseInt(document.getElementById('mc').value);
+  var v=parseFloat(document.getElementById('mm').value);var f=document.getElementById('mf').value;
+  var con=document.getElementById('mcon').value.trim();var ref=document.getElementById('mref').value;
   if(!cid||!v||!con){toast('Completá los campos requeridos','e');return;}
-  const cuenta=DB.cuentas.find(c=>c.id===cid);
+  var cuenta=DB.cuentas.find(function(c){return c.id===cid;});
   if(t==='trans_cuentas'){
-    const did=parseInt(document.getElementById('mcd').value);if(!did||did===cid){toast('Seleccioná cuenta destino diferente','e');return;}
-    const dest=DB.cuentas.find(c=>c.id===did);
-    DB.movs.push({id:nid('mv'),cid,f,con:`Transfer. a ${dest.n}: ${con}`,t:'trans_cuentas',n:-v,ref});
-    DB.movs.push({id:nid('mv'),cid:did,f,con:`Transfer. desde ${cuenta.n}: ${con}`,t:'deposito',n:+v,ref});
-    toast(`Transferencia ${fmt(v)} registrada`);
+    var did=parseInt(document.getElementById('mcd').value);if(!did||did===cid){toast('Seleccioná cuenta destino diferente','e');return;}
+    var dest=DB.cuentas.find(function(c){return c.id===did;});
+    DB.movs.push({id:nid('mv'),cid:cid,f:f,con:'Transfer. a '+dest.n+': '+con,t:'trans_cuentas',n:-v,ref:ref});
+    DB.movs.push({id:nid('mv'),cid:did,f:f,con:'Transfer. desde '+cuenta.n+': '+con,t:'deposito',n:+v,ref:ref});
+    toast('Transferencia '+fmt(v)+' registrada');
   }else{
-    DB.movs.push({id:nid('mv'),cid,f,con,t,n:t==='deposito'?+v:-v,ref});
-    toast(`Movimiento registrado: ${fmt(v)}`);
+    DB.movs.push({id:nid('mv'),cid:cid,f:f,con:con,t:t,n:t==='deposito'?+v:-v,ref:ref});
+    toast('Movimiento registrado: '+fmt(v));
   }
   save();closeM('m-mov');render('cuentas');
 }
 
-// --- APERTURA ---
 function rApertura(){
-  return`<div class="tabs">
-    <button class="tbtn ${apTab==='excel'?'on':''}" onclick="apTab='excel';render('apertura')">📊 Importar Excel</button>
-    <button class="tbtn ${apTab==='saldos'?'on':''}" onclick="apTab='saldos';render('apertura')">💰 Saldos Iniciales</button>
-    <button class="tbtn ${apTab==='cuotas'?'on':''}" onclick="apTab='cuotas';render('apertura')">📅 Cuotas Históricas</button>
-  </div>
-  ${apTab==='excel'?rImportExcel():apTab==='saldos'?rApSaldos():rApCuotas()}`;
+  return'<div class="tabs"><button class="tbtn '+(apTab==='excel'?'on':'')+'" onclick="apTab=\'excel\';render(\'apertura\')">📊 Importar Excel</button><button class="tbtn '+(apTab==='saldos'?'on':'')+'" onclick="apTab=\'saldos\';render(\'apertura\')">💰 Saldos Iniciales</button><button class="tbtn '+(apTab==='cuotas'?'on':'')+'" onclick="apTab=\'cuotas\';render(\'apertura\')">📅 Cuotas Históricas</button></div>'+
+  (apTab==='excel'?rImportExcel():apTab==='saldos'?rApSaldos():rApCuotas());
 }
-
 function rImportExcel(){
-  return`<div class="g2" style="margin-bottom:16px">
-    <div class="card" style="border-left:4px solid var(--a)"><div class="ctit">Paso 1 — Descargar Plantilla</div>
-      <p style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Descargá la plantilla con las 4 hojas: <strong>SOCIOS, SALDOS_INICIALES, CUOTAS_HISTORICAS, CUENTAS_BANCARIAS</strong>.</p>
-      <button class="btn bp" onclick="dlTemplate()">⬇ Descargar Plantilla</button>
-    </div>
-    <div class="card" style="border-left:4px solid var(--g)"><div class="ctit">Paso 2 — Subir tu Excel</div>
-      <p style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Completá la plantilla con tus datos y subila acá para importar.</p>
-      <label class="dz" id="dz" ondragover="event.preventDefault();this.classList.add('dr')" ondragleave="this.classList.remove('dr')" ondrop="onDrop(event)">
-        <input type="file" id="xlfile" accept=".xlsx,.xls" onchange="onXLFile(event)">
-        <div style="font-size:28px;margin-bottom:6px">📤</div>
-        <div style="font-size:13px;font-weight:600">Arrastrá o hacé clic</div>
-        <div style="font-size:11px;color:var(--t2);margin-top:4px">.xlsx / .xls</div>
-      </label>
-    </div>
-  </div>
-  ${importData?rImportPreview():''}`;
+  return'<div class="g2" style="margin-bottom:16px">'+
+  '<div class="card" style="border-left:4px solid var(--a)"><div class="ctit">Paso 1 — Descargar Plantilla</div><p style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Descargá la plantilla con las 4 hojas: <strong>SOCIOS, SALDOS_INICIALES, CUOTAS_HISTORICAS, CUENTAS_BANCARIAS</strong>.</p><button class="btn bp" onclick="dlTemplate()">⬇ Descargar Plantilla</button></div>'+
+  '<div class="card" style="border-left:4px solid var(--g)"><div class="ctit">Paso 2 — Subir tu Excel</div><p style="font-size:12px;color:var(--t2);margin-bottom:12px;line-height:1.6">Completá la plantilla y subila acá para importar.</p>'+
+  '<label class="dz" id="dz" ondragover="event.preventDefault();this.classList.add(\'dr\')" ondragleave="this.classList.remove(\'dr\')" ondrop="onDrop(event)"><input type="file" id="xlfile" accept=".xlsx,.xls" onchange="onXLFile(event)"><div style="font-size:28px;margin-bottom:6px">📤</div><div style="font-size:13px;font-weight:600">Arrastrá o hacé clic</div><div style="font-size:11px;color:var(--t2);margin-top:4px">.xlsx / .xls</div></label></div></div>'+
+  (importData?rImportPreview():'');
 }
-
 function rImportPreview(){
   if(!importData)return'';
-  const{socios:ss,saldos:sa,cuotas:cu,cuentas:cn}=importData;
-  const tot=ss.length+sa.length+cu.length+cn.length;
-  if(!tot)return`<div class="card"><div class="es">⚠️<div>No se encontraron datos</div></div></div>`;
-  const sec=(tit,lst,fields,col)=>{if(!lst.length)return'';
-    return`<div style="background:var(--s2);border-radius:10px;padding:12px;margin-bottom:10px;border-left:3px solid ${col}">
-      <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:8px">${tit}<span style="background:${col};color:#fff;border-radius:10px;font-size:10px;padding:1px 7px;margin-left:auto">${lst.length}</span></div>
-      ${lst.slice(0,4).map(r=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bd)">${fields.map(([k,l])=>`<span style="color:var(--t2)">${l}:</span> <strong>${r[k]||'—'}</strong> `).join('')}</div>`).join('')}
-      ${lst.length>4?`<div style="font-size:11px;color:var(--t3);padding-top:5px">+${lst.length-4} más</div>`:''}
-    </div>`;};
-  return`<div class="card" style="border:2px solid var(--g)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div><div class="ctit" style="margin:0">Vista previa</div><div style="font-size:12px;color:var(--t2);margin-top:2px">${tot} registros listos</div></div>
-      <button class="btn bg_" onclick="confirmImport()">✓ Importar Todo</button>
-    </div>
-    ${sec('👥 Socios',ss,[['n','Nombre'],['est','Estado']],'var(--a)')}
-    ${sec('💰 Saldos',sa,[['ns','Socio'],['t','Tipo'],['v','Monto']],'var(--a2)')}
-    ${sec('📅 Cuotas',cu,[['ns','Socio'],['m','Mes'],['a','Año'],['v','Monto']],'var(--g)')}
-    ${sec('🏦 Cuentas',cn,[['n','Nombre'],['t','Tipo'],['si','Saldo inicial']],'var(--tl)')}
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn bgh" style="flex:1" onclick="importData=null;render('apertura')">Cancelar</button>
-      <button class="btn bg_" style="flex:2" onclick="confirmImport()">✓ Confirmar Importación</button>
-    </div>
-  </div>`;
+  var ss=importData.socios;var sa=importData.saldos;var cu=importData.cuotas;var cn=importData.cuentas;
+  var tot=ss.length+sa.length+cu.length+cn.length;
+  if(!tot)return'<div class="card"><div class="es">⚠️<div>No se encontraron datos</div></div></div>';
+  var sec=function(tit,lst,fields,col){
+    if(!lst.length)return'';
+    return'<div style="background:var(--s2);border-radius:10px;padding:12px;margin-bottom:10px;border-left:3px solid '+col+'">'+
+    '<div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:8px">'+tit+'<span style="background:'+col+';color:#fff;border-radius:10px;font-size:10px;padding:1px 7px;margin-left:auto">'+lst.length+'</span></div>'+
+    lst.slice(0,4).map(function(r){return'<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--bd)">'+fields.map(function(f){return'<span style="color:var(--t2)">'+f[1]+':</span> <strong>'+(r[f[0]]||'—')+'</strong> ';}).join('')+'</div>';}).join('')+
+    (lst.length>4?'<div style="font-size:11px;color:var(--t3);padding-top:5px">+'+(lst.length-4)+' más</div>':'')+
+    '</div>';
+  };
+  return'<div class="card" style="border:2px solid var(--g)">'+
+  '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div><div class="ctit" style="margin:0">Vista previa</div><div style="font-size:12px;color:var(--t2);margin-top:2px">'+tot+' registros listos</div></div><button class="btn bg_" onclick="confirmImport()">✓ Importar Todo</button></div>'+
+  sec('👥 Socios',ss,[['n','Nombre'],['est','Estado']],'var(--a)')+
+  sec('💰 Saldos',sa,[['ns','Socio'],['t','Tipo'],['v','Monto']],'var(--a2)')+
+  sec('📅 Cuotas',cu,[['ns','Socio'],['m','Mes'],['a','Año'],['v','Monto']],'var(--g)')+
+  sec('🏦 Cuentas',cn,[['n','Nombre'],['t','Tipo'],['si','Saldo']],'var(--tl)')+
+  '<div style="display:flex;gap:8px;margin-top:12px">'+
+  '<button class="btn bgh" style="flex:1" onclick="importData=null;render(\'apertura\')">Cancelar</button>'+
+  '<button class="btn bg_" style="flex:2" onclick="confirmImport()">✓ Confirmar Importación</button></div></div>';
 }
-
-function dlTemplate(){
-  loadXL(()=>{
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre','Telefono','FechaIngreso','Estado'],['Juan García','099123456','2022-03-01','activo'],['María López','098765432','2021-06-15','activo']]),'SOCIOS');
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre_Socio','Tipo','Monto','Concepto','Fecha'],['Juan García','deudor',15000,'Deuda 2023','2024-01-01'],['María López','acreedor',5000,'Anticipo','2024-01-01']]),'SALDOS_INICIALES');
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre_Socio','Mes','Año','Monto','MetodoPago'],['Juan García',1,2024,5000,'efectivo'],['Juan García',2,2024,5000,'transferencia'],['María López',1,2024,5000,'efectivo']]),'CUOTAS_HISTORICAS');
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre','Tipo','SaldoInicial','Descripcion'],['Caja Chica','caja',50000,'Efectivo del club'],['Banco República','banco',200000,'Cuenta bancaria']]),'CUENTAS_BANCARIAS');
-    XLSX.writeFile(wb,'LUF193_Plantilla.xlsx');toast('Plantilla descargada');
-  });
-}
-function onDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('dr');const f=e.dataTransfer.files[0];if(f)processXL(f);}
-function onXLFile(e){const f=e.target.files[0];if(f)processXL(f);}
-function processXL(file){
-  loadXL(()=>{
-    const r=new FileReader();
-    r.onload=e=>{
-      try{
-        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-        const fxd=v=>{if(!v)return today();if(typeof v==='number'){const d=new Date(Math.round((v-25569)*86400000));return d.toISOString().split('T')[0];}if(typeof v==='string'){const d=new Date(v);if(!isNaN(d))return d.toISOString().split('T')[0];}return today();};
-        const res={socios:[],saldos:[],cuotas:[],cuentas:[]};
-        if(wb.SheetNames.includes('SOCIOS')){res.socios=XLSX.utils.sheet_to_json(wb.Sheets['SOCIOS']).map(r=>({n:String(r.Nombre||'').trim(),tel:String(r.Telefono||''),fi:fxd(r.FechaIngreso),est:String(r.Estado||'activo').toLowerCase()})).filter(s=>s.n);}
-        if(wb.SheetNames.includes('SALDOS_INICIALES')){res.saldos=XLSX.utils.sheet_to_json(wb.Sheets['SALDOS_INICIALES']).map(r=>({ns:String(r.Nombre_Socio||'').trim(),t:String(r.Tipo||'deudor').toLowerCase()==='acreedor'?'a':'d',v:parseFloat(r.Monto)||0,con:String(r.Concepto||'Saldo inicial'),f:fxd(r.Fecha)})).filter(s=>s.ns&&s.v>0);}
-        if(wb.SheetNames.includes('CUOTAS_HISTORICAS')){res.cuotas=XLSX.utils.sheet_to_json(wb.Sheets['CUOTAS_HISTORICAS']).map(r=>({ns:String(r.Nombre_Socio||'').trim(),m:parseInt(r.Mes)||1,a:parseInt(r['Año']||r.Anio||new Date().getFullYear()),v:parseFloat(r.Monto)||DB.cfg.monto_cuota,mp:String(r.MetodoPago||'efectivo').toLowerCase()})).filter(c=>c.ns&&c.m>=1&&c.m<=12&&c.a>=2000);}
-        if(wb.SheetNames.includes('CUENTAS_BANCARIAS')){res.cuentas=XLSX.utils.sheet_to_json(wb.Sheets['CUENTAS_BANCARIAS']).map(r=>({n:String(r.Nombre||'').trim(),t:String(r.Tipo||'banco').toLowerCase(),si:parseFloat(r.SaldoInicial||r['Saldo Inicial'])||0,d:String(r.Descripcion||'')})).filter(c=>c.n);}
-        importData=res;render('apertura');
-        const tot=res.socios.length+res.saldos.length+res.cuotas.length+res.cuentas.length;
-        toast(tot>0?`${tot} registros listos para revisar`:'No se encontraron datos','w');
-      }catch(err){toast('Error al leer el archivo','e');}
-    };r.readAsArrayBuffer(file);
-  });
-}
+function dlTemplate(){loadXL(function(){
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre','Telefono','FechaIngreso','Estado'],['Juan García','099123456','2022-03-01','activo'],['María López','098765432','2021-06-15','activo']]),'SOCIOS');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre_Socio','Tipo','Monto','Concepto','Fecha'],['Juan García','deudor',15000,'Deuda 2023','2024-01-01']]),'SALDOS_INICIALES');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre_Socio','Mes','Año','Monto','MetodoPago'],['Juan García',1,2024,5000,'efectivo']]),'CUOTAS_HISTORICAS');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Nombre','Tipo','SaldoInicial','Descripcion'],['Caja Chica','caja',50000,'Efectivo']]),'CUENTAS_BANCARIAS');
+  XLSX.writeFile(wb,'LUF193_Plantilla.xlsx');toast('Plantilla descargada');
+});}
+function onDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('dr');var f=e.dataTransfer.files[0];if(f)processXL(f);}
+function onXLFile(e){var f=e.target.files[0];if(f)processXL(f);}
+function processXL(file){loadXL(function(){
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var fxd=function(v){if(!v)return today();if(typeof v==='number'){var d=new Date(Math.round((v-25569)*86400000));return d.toISOString().split('T')[0];}if(typeof v==='string'){var d=new Date(v);if(!isNaN(d))return d.toISOString().split('T')[0];}return today();};
+      var res={socios:[],saldos:[],cuotas:[],cuentas:[]};
+      if(wb.SheetNames.includes('SOCIOS')){res.socios=XLSX.utils.sheet_to_json(wb.Sheets['SOCIOS']).map(function(r){return{n:String(r.Nombre||'').trim(),tel:String(r.Telefono||''),fi:fxd(r.FechaIngreso),est:String(r.Estado||'activo').toLowerCase()};}).filter(function(s){return s.n;});}
+      if(wb.SheetNames.includes('SALDOS_INICIALES')){res.saldos=XLSX.utils.sheet_to_json(wb.Sheets['SALDOS_INICIALES']).map(function(r){return{ns:String(r.Nombre_Socio||'').trim(),t:String(r.Tipo||'deudor').toLowerCase()==='acreedor'?'a':'d',v:parseFloat(r.Monto)||0,con:String(r.Concepto||'Saldo inicial'),f:fxd(r.Fecha)};}).filter(function(s){return s.ns&&s.v>0;});}
+      if(wb.SheetNames.includes('CUOTAS_HISTORICAS')){res.cuotas=XLSX.utils.sheet_to_json(wb.Sheets['CUOTAS_HISTORICAS']).map(function(r){return{ns:String(r.Nombre_Socio||'').trim(),m:parseInt(r.Mes)||1,a:parseInt(r['Año']||r.Anio||new Date().getFullYear()),v:parseFloat(r.Monto)||DB.cfg.monto_cuota,mp:String(r.MetodoPago||'efectivo').toLowerCase()};}).filter(function(c){return c.ns&&c.m>=1&&c.m<=12&&c.a>=2000;});}
+      if(wb.SheetNames.includes('CUENTAS_BANCARIAS')){res.cuentas=XLSX.utils.sheet_to_json(wb.Sheets['CUENTAS_BANCARIAS']).map(function(r){return{n:String(r.Nombre||'').trim(),t:String(r.Tipo||'banco').toLowerCase(),si:parseFloat(r.SaldoInicial||r['Saldo Inicial'])||0,d:String(r.Descripcion||'')};}).filter(function(c){return c.n;});}
+      importData=res;render('apertura');
+      var tot=res.socios.length+res.saldos.length+res.cuotas.length+res.cuentas.length;
+      toast(tot>0?tot+' registros listos':'No se encontraron datos','w');
+    }catch(err){toast('Error al leer el archivo','e');}
+  };r.readAsArrayBuffer(file);
+});}
 function confirmImport(){
   if(!importData)return;
-  const{socios:ss,saldos:sa,cuotas:cu,cuentas:cn}=importData;
-  let cnt={s:0,sa:0,c:0,cn:0};
-  ss.forEach(s=>{if(!DB.socios.find(x=>x.n.toLowerCase()===s.n.toLowerCase())){const ns={id:nid('s'),...s};DB.socios.push(ns);autoQsS(ns);cnt.s++;}});
-  cn.forEach(c=>{if(!DB.cuentas.find(x=>x.n.toLowerCase()===c.n.toLowerCase())){DB.cuentas.push({id:nid('cu'),...c,act:true});cnt.cn++;}});
-  sa.forEach(s=>{const soc=DB.socios.find(x=>x.n.toLowerCase()===s.ns.toLowerCase());if(soc){DB.apertura.push({id:nid('ap'),sid:soc.id,t:s.t,v:s.v,con:s.con,f:s.f});cnt.sa++;}});
-  cu.forEach(c=>{
-    const soc=DB.socios.find(x=>x.n.toLowerCase()===c.ns.toLowerCase());if(!soc)return;
-    const f=`${c.a}-${String(c.m).padStart(2,'0')}-01`;
-    let q=DB.cuotas.find(x=>x.sid===soc.id&&x.m===c.m&&x.a===c.a);
-    if(!q){q={id:nid('c'),sid:soc.id,m:c.m,a:c.a,n:'Cuota mensual',v:c.v,est:'co',fp:f};DB.cuotas.push(q);}
-    else{q.est='co';q.fp=f;q.v=c.v;}
-    DB.cobros.push({id:nid('co'),sid:soc.id,t:'cuota',n:`Cuota mensual ${MA(c.m,c.a)} (Apertura)`,v:c.v,f,mp:c.mp,cid:null,qid:q.id});
-    cnt.c++;
+  var ss=importData.socios;var sa=importData.saldos;var cu=importData.cuotas;var cn=importData.cuentas;
+  var cnt={s:0,sa:0,c:0,cn:0};
+  ss.forEach(function(s){if(!DB.socios.find(function(x){return x.n.toLowerCase()===s.n.toLowerCase();})){var ns={id:nid('s')};Object.assign(ns,s);DB.socios.push(ns);autoQsS(ns);cnt.s++;}});
+  cn.forEach(function(c){if(!DB.cuentas.find(function(x){return x.n.toLowerCase()===c.n.toLowerCase();})){var nc={id:nid('cu'),act:true};Object.assign(nc,c);DB.cuentas.push(nc);cnt.cn++;}});
+  sa.forEach(function(s){var soc=DB.socios.find(function(x){return x.n.toLowerCase()===s.ns.toLowerCase();});if(soc){DB.apertura.push({id:nid('ap'),sid:soc.id,t:s.t,v:s.v,con:s.con,f:s.f});cnt.sa++;}});
+  cu.forEach(function(c){
+    var soc=DB.socios.find(function(x){return x.n.toLowerCase()===c.ns.toLowerCase();});if(!soc)return;
+    var f=c.a+'-'+String(c.m).padStart(2,'0')+'-01';
+    var q=DB.cuotas.find(function(x){return x.sid===soc.id&&x.m===c.m&&x.a===c.a;});
+    if(!q){q={id:nid('c'),sid:soc.id,m:c.m,a:c.a,n:'Cuota mensual',v:c.v,est:'co',fp:f};DB.cuotas.push(q);}else{q.est='co';q.fp=f;q.v=c.v;}
+    DB.cobros.push({id:nid('co'),sid:soc.id,t:'cuota',n:'Cuota mensual '+MA(c.m,c.a)+' (Apertura)',v:c.v,f:f,mp:c.mp,cid:null,qid:q.id});cnt.c++;
   });
   save();importData=null;
-  const parts=[];if(cnt.s)parts.push(`${cnt.s} socios`);if(cnt.cn)parts.push(`${cnt.cn} cuentas`);if(cnt.sa)parts.push(`${cnt.sa} saldos`);if(cnt.c)parts.push(`${cnt.c} cuotas`);
-  toast(`Importado: ${parts.join(', ')}`);render('apertura');
+  var parts=[];if(cnt.s)parts.push(cnt.s+' socios');if(cnt.cn)parts.push(cnt.cn+' cuentas');if(cnt.sa)parts.push(cnt.sa+' saldos');if(cnt.c)parts.push(cnt.c+' cuotas');
+  toast('Importado: '+parts.join(', '));render('apertura');
 }
-
-let xlLoaded=false,xlLoading=false;
+var xlLoaded=false,xlLoading=false;
 function loadXL(cb){
   if(xlLoaded){cb();return;}
   if(xlLoading){toast('Cargando librería, aguardá...','w');return;}
   xlLoading=true;toast('Cargando librería Excel...','w');
-  const s=document.createElement('script');
-  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-  s.onload=()=>{xlLoaded=true;xlLoading=false;cb();};
-  s.onerror=()=>{xlLoading=false;toast('Error cargando librería','e');};
+  var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=function(){xlLoaded=true;xlLoading=false;cb();};
+  s.onerror=function(){xlLoading=false;toast('Error cargando librería','e');};
   document.head.appendChild(s);
 }
-
 function rApSaldos(){
-  return`<div class="card" style="margin-bottom:12px"><p style="font-size:12px;color:var(--t2)">Para cargar muchos a la vez usá <strong>Importar Excel</strong>. Acá podés agregar entradas individuales.</p></div>
-  <div style="margin-bottom:12px;display:flex;justify-content:flex-end"><button class="btn bp bs" onclick="openApSocio()">+ Agregar</button></div>
-  <div class="tw"><table><thead><tr><th>Socio</th><th>Tipo</th><th>Monto</th><th>Concepto</th><th></th></tr></thead><tbody>
-  ${!DB.apertura.length?`<tr><td colspan="5"><div class="es">📂<div>Sin saldos iniciales</div></div></td></tr>`:
-    DB.apertura.map(a=>{const s=DB.socios.find(x=>x.id===a.sid);return`<tr><td>${s?s.n:'—'}</td><td><span class="bk ${a.t==='d'?'kr':'kg'}">${a.t==='d'?'🔴 Deudor':'🟢 Acreedor'}</span></td><td style="font-family:'DM Mono';color:${a.t==='d'?'var(--r)':'var(--g)'}">${fmt(a.v)}</td><td style="font-size:12px">${a.con}</td><td><button class="btn bdr bs" onclick="delAp(${a.id})">🗑️</button></td></tr>`;}).join('')}
-  </tbody></table></div>`;
+  return'<div class="card" style="margin-bottom:12px"><p style="font-size:12px;color:var(--t2)">Para cargar muchos a la vez usá <strong>Importar Excel</strong>.</p></div>'+
+  '<div style="margin-bottom:12px;display:flex;justify-content:flex-end"><button class="btn bp bs" onclick="openApSocio()">+ Agregar</button></div>'+
+  '<div class="tw"><table><thead><tr><th>Socio</th><th>Tipo</th><th>Monto</th><th>Concepto</th><th></th></tr></thead><tbody>'+
+  (!DB.apertura.length?'<tr><td colspan="5"><div class="es">📂<div>Sin saldos iniciales</div></div></td></tr>':
+    DB.apertura.map(function(a){var s=DB.socios.find(function(x){return x.id===a.sid;});return'<tr><td>'+(s?s.n:'—')+'</td><td><span class="bk '+(a.t==='d'?'kr':'kg')+'">'+(a.t==='d'?'🔴 Deudor':'🟢 Acreedor')+'</span></td><td style="font-family:\'DM Mono\';color:'+(a.t==='d'?'var(--r)':'var(--g)')+'">'+fmt(a.v)+'</td><td style="font-size:12px">'+a.con+'</td><td><button class="btn bdr bs" onclick="delAp('+a.id+')">🗑️</button></td></tr>';}).join(''))+
+  '</tbody></table></div>';
 }
 function rApCuotas(){
-  const hist=DB.cobros.filter(c=>c.n&&c.n.includes('(Apertura)')).sort((a,b)=>b.f.localeCompare(a.f));
-  return`<div class="card" style="margin-bottom:12px"><p style="font-size:12px;color:var(--t2)">Registrá cuotas de meses anteriores ya pagadas. Para cargar masivamente usá <strong>Importar Excel</strong>.</p>
-  <button class="btn bg_" style="margin-top:10px" onclick="openApCuotas()">📅 Cargar Cuotas Históricas</button></div>
-  ${hist.length?`<div class="tw"><table><thead><tr><th>Socio</th><th>Período</th><th>Método</th><th>Monto</th></tr></thead><tbody>${hist.map(c=>{const s=DB.socios.find(x=>x.id===c.sid);return`<tr><td>${s?s.n:'—'}</td><td style="font-size:12px">${c.n.replace(' (Apertura)','')}</td><td><span class="bk ${c.mp==='transferencia'?'kt':'kx'}">${c.mp==='transferencia'?'🏦':'💵'}</span></td><td style="font-family:'DM Mono';color:var(--g)">${fmt(c.v)}</td></tr>`;}).join('')}</tbody></table></div>`:''}`;
+  var hist=DB.cobros.filter(function(c){return c.n&&c.n.includes('(Apertura)');}).sort(function(a,b){return b.f.localeCompare(a.f);});
+  return'<div class="card" style="margin-bottom:12px"><p style="font-size:12px;color:var(--t2)">Para cargar masivamente usá <strong>Importar Excel</strong>.</p><button class="btn bg_" style="margin-top:10px" onclick="openApCuotas()">📅 Cargar Cuotas Históricas</button></div>'+
+  (hist.length?'<div class="tw"><table><thead><tr><th>Socio</th><th>Período</th><th>Método</th><th>Monto</th></tr></thead><tbody>'+hist.map(function(c){var s=DB.socios.find(function(x){return x.id===c.sid;});return'<tr><td>'+(s?s.n:'—')+'</td><td style="font-size:12px">'+c.n.replace(' (Apertura)','')+'</td><td><span class="bk '+(c.mp==='transferencia'?'kt':'kx')+'">'+(c.mp==='transferencia'?'🏦':'💵')+'</span></td><td style="font-family:\'DM Mono\';color:var(--g)">'+fmt(c.v)+'</td></tr>';}).join('')+'</tbody></table></div>':'');
 }
 function openApSocio(){
-  document.getElementById('aps').innerHTML='<option value="">-- Seleccionar --</option>'+DB.socios.map(s=>`<option value="${s.id}">${s.n}</option>`).join('');
-  document.getElementById('apt').value='deudor';document.getElementById('apm').value='';document.getElementById('apcon').value='';document.getElementById('apf').value=today();
-  openM('m-ap-socio');
+  document.getElementById('aps').innerHTML='<option value="">-- Seleccionar --</option>'+DB.socios.map(function(s){return'<option value="'+s.id+'">'+s.n+'</option>';}).join('');
+  document.getElementById('apt').value='deudor';document.getElementById('apm').value='';document.getElementById('apcon').value='';document.getElementById('apf').value=today();openM('m-ap-socio');
 }
 function saveApSocio(){
-  const sid=parseInt(document.getElementById('aps').value);const v=parseFloat(document.getElementById('apm').value);const con=document.getElementById('apcon').value.trim();
+  var sid=parseInt(document.getElementById('aps').value);var v=parseFloat(document.getElementById('apm').value);var con=document.getElementById('apcon').value.trim();
   if(!sid||!v||!con){toast('Completá todos los campos','e');return;}
-  DB.apertura.push({id:nid('ap'),sid,t:document.getElementById('apt').value==='acreedor'?'a':'d',v,con,f:document.getElementById('apf').value});
+  DB.apertura.push({id:nid('ap'),sid:sid,t:document.getElementById('apt').value==='acreedor'?'a':'d',v:v,con:con,f:document.getElementById('apf').value});
   save();closeM('m-ap-socio');toast('Saldo inicial registrado');render('apertura');
 }
-function delAp(id){if(!confirm('¿Eliminar?'))return;DB.apertura=DB.apertura.filter(a=>a.id!==id);save();toast('Eliminado');render('apertura');}
-
-let apMetodoStr='efectivo';
-function setAPM(m,btn){apMetodoStr=m;document.querySelectorAll('#m-ap-cuotas .mb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('apc-cuenta-w').style.display=m==='transferencia'?'':'none';}
+function delAp(id){if(!confirm('¿Eliminar?'))return;DB.apertura=DB.apertura.filter(function(a){return a.id!==id;});save();toast('Eliminado');render('apertura');}
+function setAPM(m,btn){apMetodoStr=m;document.querySelectorAll('#m-ap-cuotas .mb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');document.getElementById('apc-cuenta-w').style.display=m==='transferencia'?'':'none';}
 function openApCuotas(){
-  document.getElementById('apcs').innerHTML='<option value="">-- Seleccionar --</option>'+DB.socios.filter(s=>s.est==='activo').map(s=>`<option value="${s.id}">${s.n}</option>`).join('');
-  document.getElementById('apcc').innerHTML='<option value="">-- Seleccionar --</option>'+DB.cuentas.filter(c=>c.act).map(c=>`<option value="${c.id}">${CICONS[c.t]||'🏦'} ${c.n}</option>`).join('');
+  document.getElementById('apcs').innerHTML='<option value="">-- Seleccionar --</option>'+DB.socios.filter(function(s){return s.est==='activo';}).map(function(s){return'<option value="'+s.id+'">'+s.n+'</option>';}).join('');
+  document.getElementById('apcc').innerHTML='<option value="">-- Seleccionar --</option>'+DB.cuentas.filter(function(c){return c.act;}).map(function(c){return'<option value="'+c.id+'">'+(CICONS[c.t]||'🏦')+' '+c.n+'</option>';}).join('');
   document.getElementById('apcd').value=tMonth();document.getElementById('apch').value=tMonth();document.getElementById('apcm').value=DB.cfg.monto_cuota;
-  apMetodoStr='efectivo';document.querySelectorAll('#m-ap-cuotas .mb').forEach((b,i)=>b.classList.toggle('on',i===0));document.getElementById('apc-cuenta-w').style.display='none';
-  openM('m-ap-cuotas');
+  apMetodoStr='efectivo';document.querySelectorAll('#m-ap-cuotas .mb').forEach(function(b,i){b.classList.toggle('on',i===0);});document.getElementById('apc-cuenta-w').style.display='none';openM('m-ap-cuotas');
 }
 function confirmApCuotas(){
-  const sid=parseInt(document.getElementById('apcs').value);const desde=document.getElementById('apcd').value;const hasta=document.getElementById('apch').value;
-  const v=parseFloat(document.getElementById('apcm').value);const mp=apMetodoStr;
-  const cid=mp==='transferencia'?parseInt(document.getElementById('apcc').value)||null:null;
+  var sid=parseInt(document.getElementById('apcs').value);var desde=document.getElementById('apcd').value;var hasta=document.getElementById('apch').value;
+  var v=parseFloat(document.getElementById('apcm').value);var mp=apMetodoStr;
+  var cid=mp==='transferencia'?parseInt(document.getElementById('apcc').value)||null:null;
   if(!sid||!desde||!hasta||!v){toast('Completá todos los campos','e');return;}
-  const soc=DB.socios.find(s=>s.id===sid);
-  const[fy,fm]=desde.split('-').map(Number);const[ty,tm]=hasta.split('-').map(Number);
-  const months=[];let y=fy,m=fm;while(y<ty||(y===ty&&m<=tm)){months.push({m,a:y});m++;if(m>12){m=1;y++;}}
-  months.forEach(({m,a})=>{
-    const f=`${a}-${String(m).padStart(2,'0')}-01`;
-    let q=DB.cuotas.find(c=>c.sid===sid&&c.m===m&&c.a===a);
-    if(!q){q={id:nid('c'),sid,m,a,n:'Cuota mensual',v,est:'co',fp:f};DB.cuotas.push(q);}else{q.est='co';q.fp=f;q.v=v;}
-    const co={id:nid('co'),sid,t:'cuota',n:`Cuota mensual ${MA(m,a)} (Apertura)`,v,f,mp,cid,qid:q.id};
+  var soc=DB.socios.find(function(s){return s.id===sid;});
+  var fy=parseInt(desde.split('-')[0]),fm=parseInt(desde.split('-')[1]);
+  var ty=parseInt(hasta.split('-')[0]),tm=parseInt(hasta.split('-')[1]);
+  var months=[];var y=fy,m=fm;while(y<ty||(y===ty&&m<=tm)){months.push({m:m,a:y});m++;if(m>12){m=1;y++;}}
+  months.forEach(function(x){
+    var f=x.a+'-'+String(x.m).padStart(2,'0')+'-01';
+    var q=DB.cuotas.find(function(c){return c.sid===sid&&c.m===x.m&&c.a===x.a;});
+    if(!q){q={id:nid('c'),sid:sid,m:x.m,a:x.a,n:'Cuota mensual',v:v,est:'co',fp:f};DB.cuotas.push(q);}else{q.est='co';q.fp=f;q.v=v;}
+    var co={id:nid('co'),sid:sid,t:'cuota',n:'Cuota mensual '+MA(x.m,x.a)+' (Apertura)',v:v,f:f,mp:mp,cid:cid,qid:q.id};
     DB.cobros.push(co);
-    if(mp==='transferencia'&&cid)DB.movs.push({id:nid('mv'),cid,f,con:`Apertura: Cuota ${MA(m,a)} — ${soc.n}`,t:'cobro',n:v,coid:co.id});
+    if(mp==='transferencia'&&cid)DB.movs.push({id:nid('mv'),cid:cid,f:f,con:'Apertura: Cuota '+MA(x.m,x.a)+' — '+soc.n,t:'cobro',n:v,coid:co.id});
   });
-  save();closeM('m-ap-cuotas');toast(`${months.length} cuotas históricas registradas`);render('apertura');
+  save();closeM('m-ap-cuotas');toast(months.length+' cuotas históricas registradas');render('apertura');
 }
 
-// --- LIBRO CONTABLE ---
 function rLibro(){
-  const tco=DB.cobros.reduce((a,c)=>a+c.v,0);const tga=DB.gastos.reduce((a,g)=>a+g.v,0);
-  const deup=DB.cuotas.filter(c=>c.est==='p').reduce((a,c)=>a+c.v,0);
-  const xtipo=DB.cobros.reduce((acc,c)=>{acc[c.t]=(acc[c.t]||0)+c.v;return acc},{});
-  const xmet=DB.cobros.reduce((acc,c)=>{acc[c.mp||'efectivo']=(acc[c.mp||'efectivo']||0)+c.v;return acc},{});
-  const xaj=DB.ajustes.reduce((a,x)=>a+x.n,0);
-  return`<div class="g4" style="margin-bottom:14px">
-    <div class="sc cg"><div class="sl">Total Ingresos</div><div class="sv vg">${fmt(tco)}</div></div>
-    <div class="sc cr"><div class="sl">Total Egresos</div><div class="sv vr">${fmt(tga)}</div></div>
-    <div class="sc ${tco-tga>=0?'cg':'cr'}"><div class="sl">Saldo Neto</div><div class="sv ${tco-tga>=0?'vg':'vr'}">${fmt(tco-tga)}</div></div>
-    <div class="sc cy"><div class="sl">Deuda Pendiente</div><div class="sv vy">${fmt(deup)}</div></div>
-  </div>
-  <div class="g3" style="margin-bottom:14px">
-    ${DB.cuentas.filter(c=>c.act).map(c=>{const s=getSCuenta(c.id);return`<div class="ccrd ${c.t}"><div style="font-size:22px">${CICONS[c.t]||'🏦'}</div><div style="font-size:13px;font-weight:700;margin-top:4px">${c.n}</div><div style="font-size:19px;font-weight:700;font-family:'DM Mono';color:${s>=0?'var(--tl)':'var(--r)'};margin:6px 0">${fmt(s)}</div></div>`;}).join('')||`<div style="grid-column:1/-1;color:var(--t3);text-align:center;padding:16px">Sin cuentas bancarias</div>`}
-  </div>
-  <div class="g2" style="margin-bottom:14px">
-    <div class="card"><div class="ctit">Desglose Ingresos</div>
-      <div class="crow"><span>📅 Cuotas</span><strong class="vg">${fmt(xtipo['cuota']||0)}</strong></div>
-      <div class="crow"><span>➕ Cargos</span><strong style="color:var(--a2)">${fmt(xtipo['cargo']||0)}</strong></div>
-      <div style="height:1px;background:var(--bd);margin:6px 0"></div>
-      <div class="crow"><span>💵 Efectivo</span><strong>${fmt(xmet['efectivo']||0)}</strong></div>
-      <div class="crow"><span>🏦 Transferencia</span><strong class="vt">${fmt(xmet['transferencia']||0)}</strong></div>
-      ${xaj!==0?`<div style="height:1px;background:var(--bd);margin:6px 0"></div><div class="crow"><span>⚖️ Ajustes neto</span><strong style="color:${xaj>=0?'var(--g)':'var(--r)'}">${fmtS(xaj)}</strong></div>`:''}
-    </div>
-    <div class="card"><div class="ctit">Desglose Egresos</div>
-      ${Object.entries(DB.gastos.reduce((acc,g)=>{acc[g.cat]=(acc[g.cat]||0)+g.v;return acc},{})).map(([k,v])=>`<div class="crow"><span>${CATICONS[k]||'📦'} ${k}</span><strong class="vr">${fmt(v)}</strong></div>`).join('')||`<div style="color:var(--t3);text-align:center;padding:12px">Sin egresos</div>`}
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="ctit" style="margin:0">Libro Mayor — Saldos por Socio</div>
-      <button class="btn bgh bs" onclick="expLibro()">⬇ CSV</button>
-    </div>
-    <div class="tw"><table><thead><tr><th>Socio</th><th>Apertura</th><th>Ajustes</th><th>Cobrado</th><th>Deuda</th><th>Saldo</th><th></th></tr></thead><tbody>
-    ${!DB.socios.length?`<tr><td colspan="7"><div class="es">📒<div>Sin socios</div></div></td></tr>`:
-      DB.socios.map(s=>{const{ap,aj,co,de,s:sal}=getSaldoSocio(s.id);
-      return`<tr><td><strong>${s.n}</strong></td><td style="font-family:'DM Mono';font-size:12px;color:${ap>=0?'var(--g)':'var(--r)'}">${fmt(ap)}</td><td style="font-family:'DM Mono';font-size:12px;color:${aj>=0?'var(--g)':aj<0?'var(--r)':'var(--t3)'}">${aj!==0?fmtS(aj):'—'}</td><td style="font-family:'DM Mono';font-size:12px;color:var(--g)">${fmt(co)}</td><td style="font-family:'DM Mono';font-size:12px;color:var(--r)">${fmt(de)}</td><td style="font-family:'DM Mono';font-weight:700;color:${sal>=0?'var(--g)':'var(--r)'}">${fmt(sal)}</td><td><div style="display:flex;gap:4px"><button class="btn bgh bs" onclick="verSocio(${s.id})">📒</button><button class="btn bwy bs" onclick="openAjuste(${s.id})">⚖️</button></div></td></tr>`;
-      }).join('')}
-    </tbody></table></div>
-  </div>`;
+  var tco=DB.cobros.reduce(function(a,c){return a+c.v;},0);var tga=DB.gastos.reduce(function(a,g){return a+g.v;},0);
+  var deup=DB.cuotas.filter(function(c){return c.est==='p';}).reduce(function(a,c){return a+c.v;},0);
+  var xtipo=DB.cobros.reduce(function(acc,c){acc[c.t]=(acc[c.t]||0)+c.v;return acc;},{});
+  var xmet=DB.cobros.reduce(function(acc,c){acc[c.mp||'efectivo']=(acc[c.mp||'efectivo']||0)+c.v;return acc;},{});
+  var xaj=DB.ajustes.reduce(function(a,x){return a+x.n;},0);
+  return'<div class="g4" style="margin-bottom:14px"><div class="sc cg"><div class="sl">Total Ingresos</div><div class="sv vg">'+fmt(tco)+'</div></div><div class="sc cr"><div class="sl">Total Egresos</div><div class="sv vr">'+fmt(tga)+'</div></div><div class="sc '+(tco-tga>=0?'cg':'cr')+'"><div class="sl">Saldo Neto</div><div class="sv '+(tco-tga>=0?'vg':'vr')+'">'+fmt(tco-tga)+'</div></div><div class="sc cy"><div class="sl">Deuda Pendiente</div><div class="sv vy">'+fmt(deup)+'</div></div></div>'+
+  '<div class="g3" style="margin-bottom:14px">'+
+  (DB.cuentas.filter(function(c){return c.act;}).map(function(c){var s=getSCuenta(c.id);return'<div class="ccrd '+c.t+'"><div style="font-size:22px">'+(CICONS[c.t]||'🏦')+'</div><div style="font-size:13px;font-weight:700;margin-top:4px">'+c.n+'</div><div style="font-size:19px;font-weight:700;font-family:\'DM Mono\';color:'+(s>=0?'var(--tl)':'var(--r)')+';margin:6px 0">'+fmt(s)+'</div></div>';}).join('')||'<div style="grid-column:1/-1;color:var(--t3);text-align:center;padding:16px">Sin cuentas bancarias</div>')+
+  '</div>'+
+  '<div class="g2" style="margin-bottom:14px">'+
+  '<div class="card"><div class="ctit">Desglose Ingresos</div><div class="crow"><span>📅 Cuotas</span><strong class="vg">'+fmt(xtipo['cuota']||0)+'</strong></div><div class="crow"><span>➕ Cargos</span><strong style="color:var(--a2)">'+fmt(xtipo['cargo']||0)+'</strong></div><div style="height:1px;background:var(--bd);margin:6px 0"></div><div class="crow"><span>💵 Efectivo</span><strong>'+fmt(xmet['efectivo']||0)+'</strong></div><div class="crow"><span>🏦 Transferencia</span><strong class="vt">'+fmt(xmet['transferencia']||0)+'</strong></div>'+(xaj!==0?'<div style="height:1px;background:var(--bd);margin:6px 0"></div><div class="crow"><span>⚖️ Ajustes neto</span><strong style="color:'+(xaj>=0?'var(--g)':'var(--r)')+'">'+fmtS(xaj)+'</strong></div>':'')+'</div>'+
+  '<div class="card"><div class="ctit">Desglose Egresos</div>'+
+  (Object.entries(DB.gastos.reduce(function(acc,g){acc[g.cat]=(acc[g.cat]||0)+g.v;return acc;},{})).map(function(kv){return'<div class="crow"><span>'+(CATICONS[kv[0]]||'📦')+' '+kv[0]+'</span><strong class="vr">'+fmt(kv[1])+'</strong></div>';}).join('')||'<div style="color:var(--t3);text-align:center;padding:12px">Sin egresos</div>')+
+  '</div></div>'+
+  '<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div class="ctit" style="margin:0">Libro Mayor</div><button class="btn bgh bs" onclick="expLibro()">⬇ CSV</button></div>'+
+  '<div class="tw"><table><thead><tr><th>Socio</th><th>Apertura</th><th>Ajustes</th><th>Cobrado</th><th>Deuda</th><th>Saldo</th><th></th></tr></thead><tbody>'+
+  (!DB.socios.length?'<tr><td colspan="7"><div class="es">📒<div>Sin socios</div></div></td></tr>':
+    DB.socios.map(function(s){var ss=getSaldoSocio(s.id);return'<tr><td><strong>'+s.n+'</strong></td><td style="font-family:\'DM Mono\';font-size:12px;color:'+(ss.ap>=0?'var(--g)':'var(--r)')+'">'+fmt(ss.ap)+'</td><td style="font-family:\'DM Mono\';font-size:12px;color:'+(ss.aj>=0?'var(--g)':ss.aj<0?'var(--r)':'var(--t3)')+'">'+  (ss.aj!==0?fmtS(ss.aj):'—')+'</td><td style="font-family:\'DM Mono\';font-size:12px;color:var(--g)">'+fmt(ss.co)+'</td><td style="font-family:\'DM Mono\';font-size:12px;color:var(--r)">'+fmt(ss.de)+'</td><td style="font-family:\'DM Mono\';font-weight:700;color:'+(ss.s>=0?'var(--g)':'var(--r)')+'">'+fmt(ss.s)+'</td><td><div style="display:flex;gap:4px"><button class="btn bgh bs" onclick="verSocio('+s.id+')">📒</button><button class="btn bwy bs" onclick="openAjuste('+s.id+')">⚖️</button></div></td></tr>';}).join(''))+
+  '</tbody></table></div></div>';
 }
 
-// --- TESORERIA ---
 function rTesoreria(){
-  const tco=DB.cobros.reduce((a,c)=>a+c.v,0);const tga=DB.gastos.reduce((a,g)=>a+g.v,0);
-  const meses={};
-  DB.cobros.forEach(c=>{const d=new Date(c.f);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;if(!meses[k])meses[k]={k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].i+=c.v;});
-  DB.gastos.forEach(g=>{const d=new Date(g.f);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;if(!meses[k])meses[k]={k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].g+=g.v;});
-  const rows=Object.values(meses).sort((a,b)=>b.k.localeCompare(a.k));const chart=rows.slice(0,6).reverse();const mx=Math.max(...chart.map(r=>Math.max(r.i,r.g)),1);
-  return`<div class="g4" style="margin-bottom:14px">
-    <div class="sc cg"><div class="sl">Total Cobrado</div><div class="sv vg">${fmt(tco)}</div></div>
-    <div class="sc cr"><div class="sl">Total Gastos</div><div class="sv vr">${fmt(tga)}</div></div>
-    <div class="sc ${tco-tga>=0?'cg':'cr'}"><div class="sl">Saldo Neto</div><div class="sv ${tco-tga>=0?'vg':'vr'}">${fmt(tco-tga)}</div></div>
-    <div class="sc ct"><div class="sl">Activos Bancarios</div><div class="sv vt">${fmt(getTotCuentas())}</div></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <div class="ctit">Ingresos vs Gastos por Mes</div>
-    <div style="display:flex;gap:6px;align-items:flex-end;height:90px;margin-top:10px">
-      ${chart.map(r=>{const hi=Math.round((r.i/mx)*100);const hg=Math.round((r.g/mx)*100);return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end"><div style="display:flex;gap:2px;height:100%;align-items:flex-end"><div style="height:${hi}%;background:var(--g);opacity:.7;flex:1;border-radius:3px 3px 0 0;min-height:3px"></div><div style="height:${hg}%;background:var(--r);opacity:.7;flex:1;border-radius:3px 3px 0 0;min-height:3px"></div></div><div style="font-size:9px;color:var(--t3)">${MF[r.m-1]}</div></div>`;}).join('')||`<div style="color:var(--t3);font-size:12px;padding:20px">Sin datos</div>`}
-    </div>
-    <div style="display:flex;gap:12px;margin-top:7px;font-size:11px">
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--g);border-radius:2px;opacity:.7;display:inline-block"></span>Ingresos</span>
-      <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--r);border-radius:2px;opacity:.7;display:inline-block"></span>Gastos</span>
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="ctit" style="margin:0">Reporte Mensual</div>
-      <button class="btn bgh bs" onclick="expReporte()">⬇ CSV</button>
-    </div>
-    <div class="tw"><table><thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Saldo</th></tr></thead><tbody>
-    ${rows.map(r=>{const s=r.i-r.g;return`<tr><td>${MA(r.m,r.a)}</td><td style="font-family:'DM Mono';color:var(--g)">${fmt(r.i)}</td><td style="font-family:'DM Mono';color:var(--r)">${fmt(r.g)}</td><td style="font-family:'DM Mono';font-weight:700;color:${s>=0?'var(--g)':'var(--r)'}">${fmt(s)}</td></tr>`;}).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:16px">Sin datos</td></tr>`}
-    </tbody></table></div>
-  </div>`;
+  var tco=DB.cobros.reduce(function(a,c){return a+c.v;},0);var tga=DB.gastos.reduce(function(a,g){return a+g.v;},0);
+  var meses={};
+  DB.cobros.forEach(function(c){var d=new Date(c.f);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!meses[k])meses[k]={k:k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].i+=c.v;});
+  DB.gastos.forEach(function(g){var d=new Date(g.f);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!meses[k])meses[k]={k:k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].g+=g.v;});
+  var rows=Object.values(meses).sort(function(a,b){return b.k.localeCompare(a.k);});
+  var chart=rows.slice(0,6).reverse();var mx=Math.max.apply(null,chart.map(function(r){return Math.max(r.i,r.g);}).concat([1]));
+  return'<div class="g4" style="margin-bottom:14px"><div class="sc cg"><div class="sl">Total Cobrado</div><div class="sv vg">'+fmt(tco)+'</div></div><div class="sc cr"><div class="sl">Total Gastos</div><div class="sv vr">'+fmt(tga)+'</div></div><div class="sc '+(tco-tga>=0?'cg':'cr')+'"><div class="sl">Saldo Neto</div><div class="sv '+(tco-tga>=0?'vg':'vr')+'">'+fmt(tco-tga)+'</div></div><div class="sc ct"><div class="sl">Activos Bancarios</div><div class="sv vt">'+fmt(getTotCuentas())+'</div></div></div>'+
+  '<div class="card" style="margin-bottom:14px"><div class="ctit">Ingresos vs Gastos por Mes</div>'+
+  '<div style="display:flex;gap:6px;align-items:flex-end;height:90px;margin-top:10px">'+
+  (chart.map(function(r){var hi=Math.round((r.i/mx)*100);var hg=Math.round((r.g/mx)*100);return'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end"><div style="display:flex;gap:2px;height:100%;align-items:flex-end"><div style="height:'+hi+'%;background:var(--g);opacity:.7;flex:1;border-radius:3px 3px 0 0;min-height:3px"></div><div style="height:'+hg+'%;background:var(--r);opacity:.7;flex:1;border-radius:3px 3px 0 0;min-height:3px"></div></div><div style="font-size:9px;color:var(--t3)">'+MF[r.m-1]+'</div></div>';}).join('')||'<div style="color:var(--t3);font-size:12px;padding:20px">Sin datos</div>')+
+  '</div><div style="display:flex;gap:12px;margin-top:7px;font-size:11px"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--g);border-radius:2px;opacity:.7;display:inline-block"></span>Ingresos</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--r);border-radius:2px;opacity:.7;display:inline-block"></span>Gastos</span></div></div>'+
+  '<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div class="ctit" style="margin:0">Reporte Mensual</div><button class="btn bgh bs" onclick="expReporte()">⬇ CSV</button></div>'+
+  '<div class="tw"><table><thead><tr><th>Mes</th><th>Ingresos</th><th>Gastos</th><th>Saldo</th></tr></thead><tbody>'+
+  (rows.map(function(r){var s=r.i-r.g;return'<tr><td>'+MA(r.m,r.a)+'</td><td style="font-family:\'DM Mono\';color:var(--g)">'+fmt(r.i)+'</td><td style="font-family:\'DM Mono\';color:var(--r)">'+fmt(r.g)+'</td><td style="font-family:\'DM Mono\';font-weight:700;color:'+(s>=0?'var(--g)':'var(--r)')+'">'+fmt(s)+'</td></tr>';}).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:16px">Sin datos</td></tr>')+
+  '</tbody></table></div></div>';
 }
 
-// --- CONFIG ---
 function rConfig(){
-  return`<div class="card" style="max-width:460px">
-    <div class="ctit">Configuración General</div>
-    <div class="fg" style="margin-top:12px"><label>Monto de cuota mensual ($)</label><input type="number" id="cfg-q" value="${DB.cfg.monto_cuota}"></div>
-    <button class="btn bp" onclick="saveCfg()">Guardar</button>
-  </div>
-  <div class="card" style="max-width:460px;margin-top:12px">
-    <div class="ctit">Generar Cuotas del Mes</div>
-    <p style="font-size:12px;color:var(--t2);margin:8px 0 12px">Genera cuotas del mes actual para socios activos que aún no la tienen.</p>
-    <button class="btn bgh" onclick="autoQs();toast('Cuotas generadas')">⚡ Generar Ahora</button>
-  </div>
-  <div class="card" style="max-width:460px;margin-top:12px">
-    <div class="ctit">🔑 Cambiar Contraseña</div>
-    <div style="margin-top:12px">
-      <div class="fg"><label>Contraseña actual</label><div class="pwr"><input type="password" id="cp-old" placeholder="••••••" autocomplete="current-password"><button class="pwe" onclick="togPW('cp-old',this)">👁</button></div></div>
-      <div class="fg"><label>Nueva contraseña</label><div class="pwr"><input type="password" id="cp-new" placeholder="••••••" autocomplete="new-password" oninput="chkPS()"><button class="pwe" onclick="togPW('cp-new',this)">👁</button></div>
-        <div id="ps-bar" style="margin-top:5px;display:none"><div style="height:3px;border-radius:2px;background:var(--bd);overflow:hidden"><div id="ps-fill" style="height:100%;border-radius:2px;transition:all .3s"></div></div><div id="ps-lbl" style="font-size:11px;margin-top:3px"></div></div>
-      </div>
-      <div class="fg"><label>Confirmar nueva contraseña</label><div class="pwr"><input type="password" id="cp-c" placeholder="••••••" autocomplete="new-password"><button class="pwe" onclick="togPW('cp-c',this)">👁</button></div></div>
-      <button class="btn bp" onclick="changePW()">🔑 Actualizar Contraseña</button>
-    </div>
-  </div>`;
+  return'<div class="card" style="max-width:460px"><div class="ctit">Configuración General</div><div class="fg" style="margin-top:12px"><label>Monto de cuota mensual ($)</label><input type="number" id="cfg-q" value="'+DB.cfg.monto_cuota+'"></div><button class="btn bp" onclick="saveCfg()">Guardar</button></div>'+
+  '<div class="card" style="max-width:460px;margin-top:12px"><div class="ctit">Generar Cuotas del Mes</div><p style="font-size:12px;color:var(--t2);margin:8px 0 12px">Genera cuotas del mes actual para socios activos que aún no la tienen.</p><button class="btn bgh" onclick="autoQs();toast(\'Cuotas generadas\')">⚡ Generar Ahora</button></div>'+
+  '<div class="card" style="max-width:460px;margin-top:12px"><div class="ctit">🔑 Cambiar Contraseña</div><div style="margin-top:12px">'+
+  '<div class="fg"><label>Contraseña actual</label><div class="pwr"><input type="password" id="cp-old" placeholder="••••••" autocomplete="current-password"><button class="pwe" onclick="togPW(\'cp-old\',this)">👁</button></div></div>'+
+  '<div class="fg"><label>Nueva contraseña</label><div class="pwr"><input type="password" id="cp-new" placeholder="••••••" autocomplete="new-password" oninput="chkPS()"><button class="pwe" onclick="togPW(\'cp-new\',this)">👁</button></div><div id="ps-bar" style="margin-top:5px;display:none"><div style="height:3px;border-radius:2px;background:var(--bd);overflow:hidden"><div id="ps-fill" style="height:100%;border-radius:2px;transition:all .3s"></div></div><div id="ps-lbl" style="font-size:11px;margin-top:3px"></div></div></div>'+
+  '<div class="fg"><label>Confirmar nueva contraseña</label><div class="pwr"><input type="password" id="cp-c" placeholder="••••••" autocomplete="new-password"><button class="pwe" onclick="togPW(\'cp-c\',this)">👁</button></div></div>'+
+  '<button class="btn bp" onclick="changePW()">🔑 Actualizar Contraseña</button></div></div>';
 }
-function saveCfg(){const v=parseFloat(document.getElementById('cfg-q').value);if(!v||v<=0){toast('Monto inválido','e');return;}DB.cfg.monto_cuota=v;save();toast('Configuración guardada');}
-function togPW(id,btn){const i=document.getElementById(id);const isP=i.type==='password';i.type=isP?'text':'password';btn.textContent=isP?'🙈':'👁';}
+function saveCfg(){var v=parseFloat(document.getElementById('cfg-q').value);if(!v||v<=0){toast('Monto inválido','e');return;}DB.cfg.monto_cuota=v;save();toast('Configuración guardada');}
+function togPW(id,btn){var i=document.getElementById(id);var isP=i.type==='password';i.type=isP?'text':'password';btn.textContent=isP?'🙈':'👁';}
 function chkPS(){
-  const v=document.getElementById('cp-new').value;
-  const bar=document.getElementById('ps-bar');const fill=document.getElementById('ps-fill');const lbl=document.getElementById('ps-lbl');
+  var v=document.getElementById('cp-new').value;var bar=document.getElementById('ps-bar');var fill=document.getElementById('ps-fill');var lbl=document.getElementById('ps-lbl');
   if(!v){bar.style.display='none';return;}bar.style.display='';
-  let sc=0;if(v.length>=6)sc++;if(v.length>=10)sc++;if(/[A-Z]/.test(v))sc++;if(/[0-9]/.test(v))sc++;if(/[^A-Za-z0-9]/.test(v))sc++;
-  const lvs=[{p:'20%',c:'var(--r)',l:'Muy débil'},{p:'40%',c:'var(--o)',l:'Débil'},{p:'60%',c:'var(--y)',l:'Regular'},{p:'80%',c:'var(--tl)',l:'Buena'},{p:'100%',c:'var(--g)',l:'Muy segura'}];
-  const lv=lvs[Math.min(sc,4)];fill.style.width=lv.p;fill.style.background=lv.c;lbl.textContent=lv.l;lbl.style.color=lv.c;
+  var sc=0;if(v.length>=6)sc++;if(v.length>=10)sc++;if(/[A-Z]/.test(v))sc++;if(/[0-9]/.test(v))sc++;if(/[^A-Za-z0-9]/.test(v))sc++;
+  var lvs=[{p:'20%',c:'var(--r)',l:'Muy débil'},{p:'40%',c:'var(--o)',l:'Débil'},{p:'60%',c:'var(--y)',l:'Regular'},{p:'80%',c:'var(--tl)',l:'Buena'},{p:'100%',c:'var(--g)',l:'Muy segura'}];
+  var lv=lvs[Math.min(sc,4)];fill.style.width=lv.p;fill.style.background=lv.c;lbl.textContent=lv.l;lbl.style.color=lv.c;
 }
 function changePW(){
-  const old=document.getElementById('cp-old').value;const nw=document.getElementById('cp-new').value;const cf=document.getElementById('cp-c').value;
-  const usr=DB.users.find(x=>x.user===CU.user);if(!usr){toast('Error de usuario','e');return;}
+  var old=document.getElementById('cp-old').value;var nw=document.getElementById('cp-new').value;var cf=document.getElementById('cp-c').value;
+  var usr=DB.users.find(function(x){return x.user===CU.user;});if(!usr){toast('Error de usuario','e');return;}
   if(usr.pass!==old){toast('La contraseña actual es incorrecta','e');document.getElementById('cp-old').focus();return;}
   if(!nw||nw.length<4){toast('Mínimo 4 caracteres','e');return;}
   if(nw!==cf){toast('Las contraseñas no coinciden','e');document.getElementById('cp-c').focus();return;}
   if(nw===old){toast('La nueva contraseña debe ser diferente','e');return;}
-  usr.pass=nw;save();['cp-old','cp-new','cp-c'].forEach(id=>document.getElementById(id).value='');document.getElementById('ps-bar').style.display='none';
-  toast('Contraseña actualizada');
+  usr.pass=nw;save();['cp-old','cp-new','cp-c'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('ps-bar').style.display='none';toast('Contraseña actualizada');
 }
 
-// --- VER SOCIO ---
 function verSocio(id){
-  const s=DB.socios.find(x=>x.id===id);
-  const cobros=DB.cobros.filter(c=>c.sid===id).sort((a,b)=>b.f.localeCompare(a.f));
-  const qpend=DB.cuotas.filter(c=>c.sid===id&&c.est==='p').sort((a,b)=>a.a!==b.a?a.a-b.a:a.m-b.m);
-  const aps=DB.apertura.filter(a=>a.sid===id);const ajs=DB.ajustes.filter(a=>a.sid===id);
-  const{ap,aj,co,de,s:sal}=getSaldoSocio(id);
-  document.getElementById('vs-tit').textContent=`📒 ${s.n}`;
-  document.getElementById('vs-body').innerHTML=`
-  <div class="g4" style="margin-bottom:12px">
-    <div class="sc cp" style="padding:11px"><div class="sl">Apertura</div><div style="font-size:15px;font-weight:700;font-family:'DM Mono';color:${ap>=0?'var(--g)':'var(--r)'}">${fmt(ap)}</div></div>
-    <div class="sc cy" style="padding:11px"><div class="sl">Ajustes</div><div style="font-size:15px;font-weight:700;font-family:'DM Mono';color:${aj>=0?'var(--g)':aj<0?'var(--r)':'var(--t2)'}">${aj!==0?fmtS(aj):'—'}</div></div>
-    <div class="sc cg" style="padding:11px"><div class="sl">Cobrado</div><div style="font-size:15px;font-weight:700;font-family:'DM Mono';color:var(--g)">${fmt(co)}</div></div>
-    <div class="sc ${sal>=0?'cg':'cr'}" style="padding:11px"><div class="sl">Saldo</div><div style="font-size:15px;font-weight:700;font-family:'DM Mono';color:${sal>=0?'var(--g)':'var(--r)'}">${fmt(sal)}</div></div>
-  </div>
-  ${qpend.length?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Cuotas Pendientes</div>${qpend.map(c=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>${c.n} — ${MA(c.m,c.a)}</span><span style="font-family:'DM Mono';color:var(--r)">${fmt(c.v)}</span></div>`).join('')}</div>`:''}
-  ${aps.length?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Saldos de Apertura</div>${aps.map(a=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>${a.con} <span class="bk ${a.t==='d'?'kr':'kg'}" style="font-size:10px">${a.t==='d'?'Deudor':'Acreedor'}</span></span><span style="font-family:'DM Mono';color:${a.t==='d'?'var(--r)':'var(--g)'}">${fmt(a.v)}</span></div>`).join('')}</div>`:''}
-  ${ajs.length?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Ajustes de Saldo</div>${ajs.map(a=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>${a.con} <span class="bk kw" style="font-size:10px">${a.t==='pos'?'crédito':'débito'}</span></span><span style="font-family:'DM Mono';color:${a.n>=0?'var(--g)':'var(--r)'}">${fmtS(a.n)}</span></div>`).join('')}</div>`:''}
-  <div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Cobros Realizados</div>
-  ${!cobros.length?`<div style="color:var(--t3);text-align:center;padding:14px;font-size:12px">Sin cobros</div>`:cobros.slice(0,15).map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)"><div><div style="font-size:12px;font-weight:500">${c.n}</div><div style="font-size:10px;color:var(--t3)">${c.f} · ${c.mp==='transferencia'?'🏦':'💵'}</div></div><strong style="color:var(--g);font-family:'DM Mono';font-size:12px">${fmt(c.v)}</strong></div>`).join('')}
-  <div style="margin-top:14px;display:flex;gap:8px">
-    <button class="btn bg_" style="flex:1" onclick="closeM('m-vsocio');openCobro(${id})">💳 Cobrar</button>
-    <button class="btn bwy" style="flex:1" onclick="closeM('m-vsocio');openAjuste(${id})">⚖️ Ajustar</button>
-  </div>`;
+  var s=DB.socios.find(function(x){return x.id===id;});
+  var cobros=DB.cobros.filter(function(c){return c.sid===id;}).sort(function(a,b){return b.f.localeCompare(a.f);});
+  var qpend=DB.cuotas.filter(function(c){return c.sid===id&&c.est==='p';}).sort(function(a,b){return a.a!==b.a?a.a-b.a:a.m-b.m;});
+  var aps=DB.apertura.filter(function(a){return a.sid===id;});
+  var ajs=DB.ajustes.filter(function(a){return a.sid===id;});
+  var ss=getSaldoSocio(id);
+  document.getElementById('vs-tit').textContent='📒 '+s.n;
+  document.getElementById('vs-body').innerHTML=
+  '<div class="g4" style="margin-bottom:12px">'+
+  '<div class="sc cp" style="padding:11px"><div class="sl">Apertura</div><div style="font-size:15px;font-weight:700;font-family:\'DM Mono\';color:'+(ss.ap>=0?'var(--g)':'var(--r)')+'">'+fmt(ss.ap)+'</div></div>'+
+  '<div class="sc cy" style="padding:11px"><div class="sl">Ajustes</div><div style="font-size:15px;font-weight:700;font-family:\'DM Mono\';color:'+(ss.aj>=0?'var(--g)':ss.aj<0?'var(--r)':'var(--t2)')+'">'+  (ss.aj!==0?fmtS(ss.aj):'—')+'</div></div>'+
+  '<div class="sc cg" style="padding:11px"><div class="sl">Cobrado</div><div style="font-size:15px;font-weight:700;font-family:\'DM Mono\';color:var(--g)">'+fmt(ss.co)+'</div></div>'+
+  '<div class="sc '+(ss.s>=0?'cg':'cr')+'" style="padding:11px"><div class="sl">Saldo</div><div style="font-size:15px;font-weight:700;font-family:\'DM Mono\';color:'+(ss.s>=0?'var(--g)':'var(--r)')+'">'+fmt(ss.s)+'</div></div>'+
+  '</div>'+
+  (qpend.length?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Cuotas Pendientes</div>'+qpend.map(function(c){return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>'+c.n+' — '+MA(c.m,c.a)+'</span><span style="font-family:\'DM Mono\';color:var(--r)">'+fmt(c.v)+'</span></div>';}).join('')+'</div>':'')+
+  (aps.length?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Saldos de Apertura</div>'+aps.map(function(a){return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>'+a.con+' <span class="bk '+(a.t==='d'?'kr':'kg')+'" style="font-size:10px">'+(a.t==='d'?'Deudor':'Acreedor')+'</span></span><span style="font-family:\'DM Mono\';color:'+(a.t==='d'?'var(--r)':'var(--g)')+'">'+fmt(a.v)+'</span></div>';}).join('')+'</div>':'')+
+  (ajs.length?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Ajustes de Saldo</div>'+ajs.map(function(a){return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>'+a.con+' <span class="bk kw" style="font-size:10px">'+(a.t==='pos'?'crédito':'débito')+'</span></span><span style="font-family:\'DM Mono\';color:'+(a.n>=0?'var(--g)':'var(--r)')+'">'+fmtS(a.n)+'</span></div>';}).join('')+'</div>':'')+
+  '<div style="font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;margin-bottom:6px">Cobros Realizados</div>'+
+  (!cobros.length?'<div style="color:var(--t3);text-align:center;padding:14px;font-size:12px">Sin cobros</div>':
+    cobros.slice(0,15).map(function(c){return'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd)"><div><div style="font-size:12px;font-weight:500">'+c.n+'</div><div style="font-size:10px;color:var(--t3)">'+c.f+' · '+(c.mp==='transferencia'?'🏦':'💵')+'</div></div><strong style="color:var(--g);font-family:\'DM Mono\';font-size:12px">'+fmt(c.v)+'</strong></div>';}).join(''))+
+  '<div style="margin-top:14px;display:flex;gap:8px"><button class="btn bg_" style="flex:1" onclick="closeM(\'m-vsocio\');openCobro('+id+')">💳 Cobrar</button><button class="btn bwy" style="flex:1" onclick="closeM(\'m-vsocio\');openAjuste('+id+')">⚖️ Ajustar</button></div>';
   openM('m-vsocio');
 }
 
-// --- EXPORTS ---
 function expLibro(){
-  const rows=DB.socios.map(s=>{const{ap,aj,co,de,s:sal}=getSaldoSocio(s.id);return`${s.n},${s.est},${ap},${aj},${co},${de},${sal}`;});
-  const csv='Socio,Estado,Apertura,Ajustes,Cobrado,Deuda,Saldo\n'+rows.join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='luf193_libro.csv';a.click();
+  var rows=DB.socios.map(function(s){var ss=getSaldoSocio(s.id);return s.n+','+s.est+','+ss.ap+','+ss.aj+','+ss.co+','+ss.de+','+ss.s;});
+  var csv='Socio,Estado,Apertura,Ajustes,Cobrado,Deuda,Saldo\n'+rows.join('\n');
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='luf193_libro.csv';a.click();
 }
 function expReporte(){
-  const meses={};
-  DB.cobros.forEach(c=>{const d=new Date(c.f);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;if(!meses[k])meses[k]={k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].i+=c.v;});
-  DB.gastos.forEach(g=>{const d=new Date(g.f);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;if(!meses[k])meses[k]={k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].g+=g.v;});
-  const rows=Object.values(meses).sort((a,b)=>b.k.localeCompare(a.k));
-  const csv='Mes,Ingresos,Gastos,Saldo\n'+rows.map(r=>`${MA(r.m,r.a)},${r.i},${r.g},${r.i-r.g}`).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='luf193_tesoreria.csv';a.click();
+  var meses={};
+  DB.cobros.forEach(function(c){var d=new Date(c.f);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!meses[k])meses[k]={k:k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].i+=c.v;});
+  DB.gastos.forEach(function(g){var d=new Date(g.f);var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!meses[k])meses[k]={k:k,a:d.getFullYear(),m:d.getMonth()+1,i:0,g:0};meses[k].g+=g.v;});
+  var rows=Object.values(meses).sort(function(a,b){return b.k.localeCompare(a.k);});
+  var csv='Mes,Ingresos,Gastos,Saldo\n'+rows.map(function(r){return MA(r.m,r.a)+','+r.i+','+r.g+','+(r.i-r.g);}).join('\n');
+  var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='luf193_tesoreria.csv';a.click();
 }
 
-// ===== INIT =====
 load();
 autoQs();
-
-// PWA Service Worker
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('/service-worker.js').catch(()=>{}));
+  window.addEventListener('load',function(){navigator.serviceWorker.register('/service-worker.js').catch(function(){});});
 }
 </script>
 </body>
