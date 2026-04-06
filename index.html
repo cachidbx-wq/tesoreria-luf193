@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LUF193">
 <link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#eef0fb;--s:#fff;--s2:#f4f5fd;--bd:#dde0f0;--a:#6b8ef5;--a2:#a07cf6;--g:#2eb870;--y:#e8a820;--o:#e87840;--r:#e85560;--tl:#22b8a4;--tx:#1e2547;--t2:#5a6285;--t3:#9da4c2}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -346,38 +346,19 @@ select option{background:var(--s)}
 </div></div>
 
 <script>
-// ===== CARGA FIREBASE Y ARRANCA LA APP =====
-var fdb, DOC, saving = false;
-
-function initFirebase() {
-  var firebaseConfig = {
-    apiKey: "AIzaSyBE5x2JSI8OmRVt-6HzkfEpJhGQjFQ_NIw",
-    authDomain: "tesoreria-luf193.firebaseapp.com",
-    projectId: "tesoreria-luf193",
-    storageBucket: "tesoreria-luf193.firebasestorage.app",
-    messagingSenderId: "558285495763",
-    appId: "1:558285495763:web:889aac8d6cc1cff174a326"
-  };
-  firebase.initializeApp(firebaseConfig);
-  fdb = firebase.firestore();
-  DOC = fdb.collection('luf193').doc('data');
-  startListener();
-}
-
-function loadScript(src, cb) {
-  var s = document.createElement('script');
-  s.src = src;
-  s.onload = cb;
-  s.onerror = function(){ document.getElementById('loading').innerHTML='<div style="color:red;padding:20px">Error al cargar Firebase. Verificá tu conexión.</div>'; };
-  document.head.appendChild(s);
-}
-
-// Cargar Firebase en cadena y luego inicializar
-loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js', function() {
-  loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js', function() {
-    initFirebase();
-  });
-});
+// ===== FIREBASE INIT =====
+var firebaseConfig = {
+  apiKey: "AIzaSyBE5x2JSI8OmRVt-6HzkfEpJhGQjFQ_NIw",
+  authDomain: "tesoreria-luf193.firebaseapp.com",
+  projectId: "tesoreria-luf193",
+  storageBucket: "tesoreria-luf193.firebasestorage.app",
+  messagingSenderId: "558285495763",
+  appId: "1:558285495763:web:889aac8d6cc1cff174a326"
+};
+firebase.initializeApp(firebaseConfig);
+var fdb = firebase.firestore();
+var DOC = fdb.collection('luf193').doc('data');
+var saving = false;
 
 // ===== DATA =====
 var DB = {
@@ -1038,8 +1019,8 @@ function expReporte(){
   var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='luf193_tesoreria.csv';a.click();
 }
 
-function startListener(){
-  DOC.onSnapshot(function(snap){
+// ===== FIRESTORE LISTENER =====
+DOC.onSnapshot(function(snap){
   if(snap.exists){
     var data=snap.data();
     Object.assign(DB,data);
@@ -1048,13 +1029,12 @@ function startListener(){
   document.getElementById('loading').style.display='none';
   document.getElementById('LS').style.display=CU?'none':'flex';
   if(CU&&!saving)render(curPage);
-  },function(err){
-    console.error('Firestore error:',err);
-    document.getElementById('loading').style.display='none';
-    document.getElementById('LS').style.display='flex';
-    toast('Error de conexión','e');
-  });
-}
+},function(err){
+  console.error('Firestore error:',err);
+  document.getElementById('loading').style.display='none';
+  document.getElementById('LS').style.display='flex';
+  toast('Error de conexión','e');
+});
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){navigator.serviceWorker.register('/service-worker.js').catch(function(){});});
